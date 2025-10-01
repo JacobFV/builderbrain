@@ -50,12 +50,11 @@ class BuilderBrainTrainer:
         self.training_history = []
 
     def _initialize_model(self) -> DualRail:
-        """Initialize the dual-rail model."""
+        """Initialize the dual-rail model with configurable base model."""
         model_config = self.config['model']
 
-        # Load base model (would be actual pretrained model in practice)
-        from transformers import GPT2LMHeadModel
-        base_model = GPT2LMHeadModel.from_pretrained('gpt2')
+        # Load base model based on configuration
+        base_model = self._load_base_model(model_config)
 
         model = DualRail(
             base_model=base_model,
@@ -66,6 +65,37 @@ class BuilderBrainTrainer:
         )
 
         return model
+
+    def _load_base_model(self, model_config: Dict[str, Any]):
+        """Load base transformer model based on configuration."""
+        model_type = model_config.get('type', 'gpt2')
+        model_name = model_config.get('name', 'gpt2')
+
+        if model_type == 'gpt2':
+            from transformers import GPT2LMHeadModel
+            return GPT2LMHeadModel.from_pretrained(model_name)
+        elif model_type == 'gpt_neo':
+            from transformers import GPTNeoForCausalLM
+            return GPTNeoForCausalLM.from_pretrained(model_name)
+        elif model_type == 'llama':
+            from transformers import LlamaForCausalLM
+            return LlamaForCausalLM.from_pretrained(model_name)
+        elif model_type == 'opt':
+            from transformers import OPTForCausalLM
+            return OPTForCausalLM.from_pretrained(model_name)
+        elif model_type == 'tiny':
+            # Create a tiny model for testing
+            from transformers import GPT2Config, GPT2LMHeadModel
+            config = GPT2Config(
+                vocab_size=1000,
+                n_positions=128,
+                n_embd=64,
+                n_layer=2,
+                n_head=2
+            )
+            return GPT2LMHeadModel(config)
+        else:
+            raise ValueError(f"Unknown model type: {model_type}")
 
     def _initialize_dual_optimizer(self) -> DualOptimizer:
         """Initialize the dual constraint optimizer."""

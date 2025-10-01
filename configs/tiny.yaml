@@ -1,0 +1,41 @@
+# Tiny configuration for local testing on MacBook Pro
+# Minimal resources, fast iteration
+
+model:
+  type: "tiny"  # Custom tiny model for testing
+  name: "tiny"
+  hidden_size: 64
+  num_layers: 2
+  num_programs: 8
+  alpha_cap: 0.05
+
+constraints:
+  grammar:
+    enabled: true
+    target: 0.0
+    normalizer: "rank"
+  graph2graph:
+    enabled: true
+    target: 0.2
+    normalizer: "rank"
+  buildability:
+    enabled: true
+    target: 0.0
+    normalizer: "winsor"
+
+training:
+  batch_size: 4
+  learning_rate: 1e-3
+  eta_lambda: 1e-2
+  lambda_max: 10.0
+  num_epochs: 10
+  save_every: 5
+
+data:
+  max_length: 128
+  vocab_size: 1000
+
+runtime:
+  max_generation_length: 50
+  temperature: 0.8
+  use_grammar_mask: true
