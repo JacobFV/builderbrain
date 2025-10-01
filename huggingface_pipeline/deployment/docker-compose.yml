@@ -1,0 +1,110 @@
+version: '3.8'
+
+services:
+  # Main BuilderBrain inference API
+  builderbrain-api:
+    build:
+      context: ..
+      dockerfile: huggingface_pipeline/deployment/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ../exports:/app/exports
+      - ../configs:/app/configs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Dashboard service
+  dashboard:
+    build:
+      context: ..
+      dockerfile: builderbrain_dashboard/Dockerfile
+    ports:
+      - "8501:8501"
+    environment:
+      - PYTHONPATH=/app
+      - API_BASE_URL=http://builderbrain-api:8000
+    depends_on:
+      - builderbrain-api
+    restart: unless-stopped
+
+  # Training service (optional)
+  training:
+    build:
+      context: ..
+      dockerfile: huggingface_pipeline/deployment/Dockerfile
+    command: ["python", "-m", "huggingface_pipeline.training_integration.hf_trainer"]
+    environment:
+      - PYTHONPATH=/app
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ../exports:/app/exports
+      - ../configs:/app/configs
+      - training_data:/app/training_data
+    restart: "no"  # Don't restart training automatically
+    profiles:
+      - training
+
+  # Model export service
+  model-export:
+    build:
+      context: ..
+      dockerfile: huggingface_pipeline/deployment/Dockerfile
+    command: ["python", "-m", "huggingface_pipeline.model_export.export"]
+    environment:
+      - PYTHONPATH=/app
+      - HF_TOKEN=${HF_TOKEN:-}
+    volumes:
+      - ../exports:/app/exports
+      - ../configs:/app/configs
+    restart: "no"
+    profiles:
+      - export
+
+  # Monitoring service (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    restart: unless-stopped
+
+  # Monitoring service (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  training_data:
+  grafana_data:
+
+networks:
+  default:
+    name: builderbrain-network

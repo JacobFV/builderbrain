@@ -10,6 +10,17 @@ dependencies = [
     "transformers>=4.35.0",
     "numpy>=1.25.0",
     "pyyaml>=6.0.0",
+    "streamlit>=1.50.0",
+    "plotly>=6.3.0",
+    "fastapi>=0.118.0",
+    "uvicorn>=0.37.0",
+    "pandas>=2.3.3",
+    "psutil>=7.1.0",
+    "datasets>=4.1.1",
+    "accelerate>=1.10.1",
+    "wandb>=0.22.1",
+    "gradio>=5.47.2",
+    "huggingface-hub>=0.35.3",
 ]
 
 [dependency-groups]

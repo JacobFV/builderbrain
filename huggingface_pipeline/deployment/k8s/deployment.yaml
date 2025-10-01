@@ -1,0 +1,249 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: builderbrain-api
+  labels:
+    app: builderbrain-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: builderbrain-api
+  template:
+    metadata:
+      labels:
+        app: builderbrain-api
+    spec:
+      containers:
+      - name: builderbrain-api
+        image: builderbrain/builderbrain-api:latest
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        - name: HF_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: huggingface-secrets
+              key: hf-token
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: exports-volume
+          mountPath: /app/exports
+        - name: configs-volume
+          mountPath: /app/configs
+      volumes:
+      - name: exports-volume
+        persistentVolumeClaim:
+          claimName: builderbrain-exports-pvc
+      - name: configs-volume
+        configMap:
+          name: builderbrain-configs
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: builderbrain-dashboard
+  labels:
+    app: builderbrain-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: builderbrain-dashboard
+  template:
+    metadata:
+      labels:
+        app: builderbrain-dashboard
+    spec:
+      containers:
+      - name: builderbrain-dashboard
+        image: builderbrain/builderbrain-dashboard:latest
+        ports:
+        - containerPort: 8501
+          name: streamlit
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        - name: API_BASE_URL
+          value: "http://builderbrain-api-service:8000"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "200m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8501
+          initialDelaySeconds: 30
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: builderbrain-api-service
+spec:
+  selector:
+    app: builderbrain-api
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: builderbrain-dashboard-service
+spec:
+  selector:
+    app: builderbrain-dashboard
+  ports:
+  - name: streamlit
+    port: 8501
+    targetPort: 8501
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: builderbrain-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: builderbrain.local
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: builderbrain-api-service
+            port:
+              number: 8000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: builderbrain-dashboard-service
+            port:
+              number: 8501
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: builderbrain-configs
+data:
+  small.yaml: |
+    model:
+      hidden_size: 768
+      num_layers: 6
+      num_programs: 32
+      alpha_cap: 0.1
+      type: gpt2
+      name: gpt2
+    constraints:
+      grammar:
+        enabled: true
+        target: 0.0
+        normalizer: rank
+      graph2graph:
+        enabled: true
+        target: 0.2
+        normalizer: rank
+      reuse:
+        enabled: true
+        target: 0.5
+        normalizer: rank
+    training:
+      batch_size: 16
+      learning_rate: 1e-4
+      eta_lambda: 1e-2
+      lambda_max: 50.0
+      num_epochs: 100
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: builderbrain-exports-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: huggingface-secrets
+type: Opaque
+data:
+  # Base64 encoded Hugging Face token
+  hf-token: ""  # Add your HF token here
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: builderbrain-api-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: builderbrain-api
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 10
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 120
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
