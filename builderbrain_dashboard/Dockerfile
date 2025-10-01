@@ -32,7 +32,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 COPY . ./
 
 # Clean up any existing virtual environment with wrong permissions
-RUN rm -rf .venv
+RUN rm -rf .venv || true
 
 # Expose port
 EXPOSE 8501
