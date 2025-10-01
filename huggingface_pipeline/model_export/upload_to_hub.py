@@ -16,7 +16,7 @@ import json
 class HubUploader:
     """Upload BuilderBrain models to Hugging Face Hub."""
 
-    def __init__(self, token: Optional[str] = None, repo_owner: str = "builderbrain-team"):
+    def __init__(self, token: Optional[str] = None, repo_owner: str = "jacob-valdez"):
         self.api = HfApi(token=token)
         self.repo_owner = repo_owner
 
@@ -63,7 +63,6 @@ class HubUploader:
                     repo_id=full_repo_id,
                     token=self.api.token,
                     private=private,
-                    description=description,
                     exist_ok=exist_ok
                 )
 
@@ -77,13 +76,13 @@ class HubUploader:
             )
 
             # Update model card with additional metadata
-            self._update_model_card(full_repo_id, scale)
+            self._update_model_card(full_repo_id, scale, description)
 
             return {
                 "status": "completed",
                 "repo_id": full_repo_id,
                 "repo_url": f"https://huggingface.co/{full_repo_id}",
-                "commit_url": upload_result.get("url", ""),
+                "commit_url": upload_result.url if hasattr(upload_result, 'url') else "",
                 "file_count": self._count_files(export_path),
                 "timestamp": "2024-01-15T10:30:00Z"
             }
@@ -108,7 +107,7 @@ class HubUploader:
         """Count files in directory."""
         return sum(1 for file_path in path.rglob('*') if file_path.is_file())
 
-    def _update_model_card(self, repo_id: str, scale: str):
+    def _update_model_card(self, repo_id: str, scale: str, description: str):
         """Update the model card with additional metadata."""
         try:
             # Read existing model card
@@ -123,7 +122,7 @@ class HubUploader:
                 content = f.read()
 
             # Add usage examples and metadata
-            updated_content = self._enhance_model_card(content, scale)
+            updated_content = self._enhance_model_card(content, scale, description)
 
             # Upload updated model card
             self.api.upload_file(
@@ -137,7 +136,7 @@ class HubUploader:
         except Exception as e:
             print(f"Warning: Could not update model card: {e}")
 
-    def _enhance_model_card(self, content: str, scale: str) -> str:
+    def _enhance_model_card(self, content: str, scale: str, description: str) -> str:
         """Enhance model card with additional information."""
         # Add usage section if not present
         if "## Usage" not in content:
