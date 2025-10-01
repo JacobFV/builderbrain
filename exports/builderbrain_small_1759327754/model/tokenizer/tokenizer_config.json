@@ -1,0 +1,10 @@
+{
+  "tokenizer_class": "GPT2Tokenizer",
+  "model_max_length": 1024,
+  "padding_side": "right",
+  "truncation_side": "right",
+  "pad_token": "<|endoftext|>",
+  "unk_token": "<|endoftext|>",
+  "eos_token": "<|endoftext|>",
+  "bos_token": "<|endoftext|>"
+}

@@ -1,0 +1,52 @@
+{
+  "model_type": "builderbrain",
+  "scale": "small",
+  "builderbrain_version": "1.0.0",
+  "model": {
+    "type": "gpt2",
+    "name": "gpt2",
+    "hidden_size": 768,
+    "num_layers": 4,
+    "num_programs": 16,
+    "alpha_cap": 0.1
+  },
+  "constraints": {
+    "grammar": {
+      "enabled": true,
+      "target": 0.0,
+      "normalizer": "rank"
+    },
+    "graph2graph": {
+      "enabled": true,
+      "target": 0.2,
+      "normalizer": "rank"
+    },
+    "buildability": {
+      "enabled": true,
+      "target": 0.0,
+      "normalizer": "winsor"
+    },
+    "reuse": {
+      "enabled": true,
+      "target": 0.5,
+      "normalizer": "rank"
+    }
+  },
+  "training": {
+    "batch_size": 8,
+    "learning_rate": "5e-4",
+    "eta_lambda": "1e-2",
+    "lambda_max": 20.0,
+    "num_epochs": 50,
+    "save_every": 10
+  },
+  "data": {
+    "max_length": 512,
+    "vocab_size": 50257
+  },
+  "runtime": {
+    "max_generation_length": 100,
+    "temperature": 0.8,
+    "use_grammar_mask": true
+  }
+}
