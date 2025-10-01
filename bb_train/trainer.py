@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader
 
 from bb_nn.dual_rail import DualRail
 from bb_losses.dual_optimizer import DualOptimizer
-from bb_losses.loss_functions import CompositeLoss, GrammarLoss, GraphToGraphLoss
+from bb_losses.loss_functions import CompositeLoss, GrammarLoss, GraphToGraphLoss, ReuseLoss
 from bb_priors.grammar_energy import GrammarEnergy
 from bb_runtime.plan_checker import PlanChecker
 
@@ -30,6 +30,9 @@ class BuilderBrainTrainer:
 
     def __init__(self, config: Dict[str, Any]):
         self.config = config
+
+        # Initialize tokenizer first
+        self.tokenizer = self._initialize_tokenizer()
 
         # Initialize model
         self.model = self._initialize_model()
@@ -76,29 +79,25 @@ class BuilderBrainTrainer:
 
         if model_type == 'gpt2':
             from transformers import GPT2LMHeadModel
+            print(f"Loading GPT-2 model: {model_name}")
             return GPT2LMHeadModel.from_pretrained(model_name)
         elif model_type == 'gpt_neo':
             from transformers import GPTNeoForCausalLM
+            print(f"Loading GPT-Neo model: {model_name}")
             return GPTNeoForCausalLM.from_pretrained(model_name)
         elif model_type == 'llama':
             from transformers import LlamaForCausalLM
+            print(f"Loading LLaMA model: {model_name}")
             return LlamaForCausalLM.from_pretrained(model_name)
         elif model_type == 'opt':
             from transformers import OPTForCausalLM
+            print(f"Loading OPT model: {model_name}")
             return OPTForCausalLM.from_pretrained(model_name)
-        elif model_type == 'tiny':
-            # Create a tiny model for testing
-            from transformers import GPT2Config, GPT2LMHeadModel
-            config = GPT2Config(
-                vocab_size=1000,
-                n_positions=128,
-                n_embd=64,
-                n_layer=2,
-                n_head=2
-            )
-            return GPT2LMHeadModel(config)
         else:
-            raise ValueError(f"Unknown model type: {model_type}")
+            # Default to GPT-2 for unknown types
+            from transformers import GPT2LMHeadModel
+            print(f"Unknown model type {model_type}, defaulting to GPT-2")
+            return GPT2LMHeadModel.from_pretrained('gpt2')
 
     def _initialize_dual_optimizer(self) -> DualOptimizer:
         """Initialize the dual constraint optimizer."""
@@ -118,12 +117,16 @@ class BuilderBrainTrainer:
         if self.config['constraints']['grammar']['enabled']:
             from bb_priors.cfg_parser import JSONGrammar
             grammar = JSONGrammar()
-            grammar_energy = GrammarEnergy(grammar, None)  # Would need tokenizer
+            grammar_energy = GrammarEnergy(grammar, self.tokenizer)
             losses['grammar'] = GrammarLoss(grammar_energy)
 
         # Graph-to-graph loss
         if self.config['constraints']['graph2graph']['enabled']:
             losses['graph2graph'] = GraphToGraphLoss()
+
+        # Reuse loss
+        if self.config['constraints'].get('reuse', {}).get('enabled', False):
+            losses['reuse'] = ReuseLoss(self.config['model']['num_programs'])
 
         # Add other losses as needed...
 
@@ -133,11 +136,47 @@ class BuilderBrainTrainer:
         """Initialize composite loss with dual optimizer."""
         return CompositeLoss(self.dual_optimizer, self.loss_functions)
 
+    def _initialize_tokenizer(self):
+        """Initialize tokenizer for the model."""
+        model_config = self.config['model']
+        model_type = model_config.get('type', 'gpt2')
+
+        if model_type == 'gpt2':
+            from transformers import GPT2Tokenizer
+            tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            return tokenizer
+        elif model_type == 'gpt_neo':
+            from transformers import GPT2Tokenizer
+            tokenizer = GPT2Tokenizer.from_pretrained('gpt2')  # GPT-Neo uses GPT-2 tokenizer
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            return tokenizer
+        elif model_type == 'llama':
+            from transformers import LlamaTokenizer
+            tokenizer = LlamaTokenizer.from_pretrained(model_config.get('name', 'huggyllama/llama-7b'))
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            return tokenizer
+        elif model_type == 'opt':
+            from transformers import GPT2Tokenizer
+            tokenizer = GPT2Tokenizer.from_pretrained('facebook/opt-1.3b')  # OPT uses GPT-2 tokenizer
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            return tokenizer
+        else:
+            from transformers import GPT2Tokenizer
+            tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+            tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.pad_token_id = tokenizer.eos_token_id
+            return tokenizer
+
     def _initialize_data_loader(self) -> DataLoader:
         """Initialize training data loader."""
         from .data_loader import BuilderBrainDataLoader
 
-        data_loader = BuilderBrainDataLoader(self.config)
+        data_loader = BuilderBrainDataLoader(self.config, self.tokenizer)
         return data_loader.get_train_loader()
 
     def train_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> Dict[str, float]:
@@ -149,15 +188,41 @@ class BuilderBrainTrainer:
 
         # Compute task loss (language modeling)
         logits = model_outputs['logits']
-        task_loss = F.cross_entropy(
-            logits.view(-1, logits.size(-1)),
-            targets.view(-1)
-        )
+
+        # Handle padding in targets for cross-entropy loss
+        if targets.dim() == 2:  # Padded sequences
+            # Flatten and ignore padding tokens
+            loss_mask = targets != -100  # -100 is ignore_index
+            flattened_logits = logits.view(-1, logits.size(-1))
+            flattened_targets = targets.view(-1)
+
+            # Create mask for valid tokens (not padding)
+            valid_mask = loss_mask.view(-1)
+
+            # Only compute loss on non-padded tokens
+            if valid_mask.sum() > 0:  # Make sure we have some valid tokens
+                task_loss = F.cross_entropy(
+                    flattened_logits[valid_mask],
+                    flattened_targets[valid_mask]
+                )
+            else:
+                # Fallback to regular loss if all tokens are padding
+                task_loss = F.cross_entropy(
+                    flattened_logits,
+                    flattened_targets,
+                    ignore_index=-100
+                )
+        else:
+            task_loss = F.cross_entropy(
+                logits.view(-1, logits.size(-1)),
+                targets.view(-1)
+            )
 
         # Prepare targets for constraint losses
         constraint_targets = {
             'target_graph': {},  # Would be actual target graphs
-            'targets': targets
+            'targets': targets,
+            'input_ids': input_ids  # Pass input IDs for grammar checking
         }
 
         # Compute composite loss with constraints

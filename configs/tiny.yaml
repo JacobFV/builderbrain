@@ -1,11 +1,11 @@
 # Tiny configuration for local testing on MacBook Pro
-# Minimal resources, fast iteration
+# GPT-2 small model for fast iteration
 
 model:
-  type: "tiny"  # Custom tiny model for testing
-  name: "tiny"
-  hidden_size: 64
-  num_layers: 2
+  type: "gpt2"
+  name: "gpt2"
+  hidden_size: 768
+  num_layers: 4
   num_programs: 8
   alpha_cap: 0.05
 
@@ -18,22 +18,18 @@ constraints:
     enabled: true
     target: 0.2
     normalizer: "rank"
-  buildability:
-    enabled: true
-    target: 0.0
-    normalizer: "winsor"
 
 training:
-  batch_size: 4
-  learning_rate: 1e-3
+  batch_size: 2
+  learning_rate: 1e-4
   eta_lambda: 1e-2
   lambda_max: 10.0
-  num_epochs: 10
-  save_every: 5
+  num_epochs: 5
+  save_every: 2
 
 data:
-  max_length: 128
-  vocab_size: 1000
+  max_length: 256
+  vocab_size: 50257
 
 runtime:
   max_generation_length: 50

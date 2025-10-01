@@ -41,10 +41,10 @@ def create_config_tiny() -> Dict[str, Any]:
     """Create tiny configuration for testing."""
     return {
         'model': {
-            'type': 'tiny',
-            'name': 'tiny',
-            'hidden_size': 64,
-            'num_layers': 2,
+            'type': 'gpt2',
+            'name': 'gpt2',
+            'hidden_size': 768,
+            'num_layers': 12,  # GPT-2 has 12 layers
             'num_programs': 8,
             'alpha_cap': 0.05
         },
@@ -58,6 +58,11 @@ def create_config_tiny() -> Dict[str, Any]:
                 'enabled': True,
                 'target': 0.2,
                 'normalizer': 'rank'
+            },
+            'reuse': {
+                'enabled': True,
+                'target': 0.5,
+                'normalizer': 'rank'
             }
         },
         'training': {
@@ -69,7 +74,7 @@ def create_config_tiny() -> Dict[str, Any]:
         },
         'data': {
             'max_length': 128,
-            'vocab_size': 1000
+            'vocab_size': 50257
         }
     }
 

@@ -206,7 +206,12 @@ class ConstraintManager:
         normalized = {}
         for name, raw_loss in raw_losses.items():
             if name in self.normalizers:
-                normalized[name] = self.normalizers[name](np.array([raw_loss]))[0]
+                # Convert tensor to float and detach if needed
+                if hasattr(raw_loss, 'detach'):
+                    loss_value = float(raw_loss.detach().cpu().numpy())
+                else:
+                    loss_value = float(raw_loss)
+                normalized[name] = self.normalizers[name](np.array([loss_value]))[0]
             else:
                 normalized[name] = raw_loss  # No normalization if no normalizer set
         return normalized

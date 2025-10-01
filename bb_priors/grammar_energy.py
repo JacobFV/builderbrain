@@ -24,9 +24,6 @@ class GrammarEnergy(nn.Module):
         self.tokenizer = tokenizer
         self.tau = tau  # Temperature for energy computation
 
-        # Learnable energy weights for different violation types
-        self.violation_weights = nn.Parameter(torch.ones(5))  # Different violation types
-
     def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
         """
         Compute grammar energy for batch of token sequences.
@@ -41,8 +38,12 @@ class GrammarEnergy(nn.Module):
         energies = torch.zeros(batch_size, device=token_ids.device)
 
         for batch_idx in range(batch_size):
-            # Decode tokens to text
+            # Decode tokens to text (ignore padding)
             tokens = token_ids[batch_idx].tolist()
+            # Remove padding tokens
+            if self.tokenizer.pad_token_id is not None:
+                tokens = [t for t in tokens if t != self.tokenizer.pad_token_id]
+
             try:
                 text = self.tokenizer.decode(tokens)
                 energy = self._compute_text_energy(text)

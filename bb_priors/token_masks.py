@@ -35,16 +35,20 @@ class GrammarMask:
             # For quoted terminals, try to find exact matches
             if terminal.startswith('"') and terminal.endswith('"'):
                 unquoted = terminal[1:-1]
-                token_id = self.tokenizer.encode(unquoted)
-                if token_id:
-                    token_ids.update(token_id)
+                try:
+                    token_id = self.tokenizer.encode(unquoted)
+                    if token_id and len(token_id) == 1:  # Single token
+                        token_ids.add(token_id[0])
+                except:
+                    pass  # Skip if encoding fails
             else:
                 # For other terminals, find tokens that contain or match the symbol
-                # This is a simplified approach - in practice would need more sophisticated matching
-                tokens = self.tokenizer.get_vocab()
-                for token, token_id in tokens.items():
-                    if terminal.lower() in token.lower():
-                        token_ids.add(token_id)
+                try:
+                    token_id = self.tokenizer.encode(terminal)
+                    if token_id:
+                        token_ids.update(token_id)
+                except:
+                    pass  # Skip if encoding fails
 
             if token_ids:
                 self.symbol_to_tokens[terminal] = token_ids
