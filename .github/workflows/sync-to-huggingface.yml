@@ -1,0 +1,112 @@
+name: Sync to Hugging Face Hub
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'huggingface_pipeline/**'
+      - 'configs/**'
+      - '.github/workflows/sync-to-huggingface.yml'
+
+jobs:
+  sync-to-hf:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install huggingface_hub
+        
+    - name: Sync API Space
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        python -c "
+        import os
+        from huggingface_hub import HfApi
+        
+        api = HfApi(token=os.environ['HF_TOKEN'])
+        
+        # Sync API Space files
+        space_id = 'jacob-valdez/builderbrain-api'
+        
+        # Upload key files
+        files_to_upload = [
+            'huggingface_pipeline/deployment/Dockerfile',
+            'huggingface_pipeline/inference_api/app.py',
+            'pyproject.toml'
+        ]
+        
+        for file_path in files_to_upload:
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as f:
+                    api.upload_file(
+                        path_or_fileobj=f,
+                        path_in_repo=file_path,
+                        repo_id=space_id,
+                        repo_type='space',
+                        token=os.environ['HF_TOKEN']
+                    )
+                print(f'✅ Uploaded {file_path} to {space_id}')
+        
+        # Restart space to pick up changes
+        api.restart_space(space_id, token=os.environ['HF_TOKEN'])
+        print(f'🔄 Restarted {space_id}')
+        "
+        
+    - name: Sync Model Repository
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        python -c "
+        import os
+        from huggingface_hub import HfApi
+        
+        api = HfApi(token=os.environ['HF_TOKEN'])
+        
+        # Check if model exports exist and upload
+        if os.path.exists('exports'):
+            export_dirs = [d for d in os.listdir('exports') if os.path.isdir(os.path.join('exports', d))]
+            if export_dirs:
+                latest_export = max(export_dirs)
+                export_path = f'exports/{latest_export}'
+                
+                if os.path.exists(export_path):
+                    print(f'📦 Found latest export: {export_path}')
+                    
+                    # Upload model files to HF Hub (not Space)
+                    model_repo_id = 'jacob-valdez/builderbrain-small'
+                    
+                    for root, dirs, files in os.walk(export_path):
+                        for file in files:
+                            file_path = os.path.join(root, file)
+                            relative_path = os.path.relpath(file_path, export_path)
+                            
+                            try:
+                                with open(file_path, 'rb') as f:
+                                    api.upload_file(
+                                        path_or_fileobj=f,
+                                        path_in_repo=relative_path,
+                                        repo_id=model_repo_id,
+                                        repo_type='model',
+                                        token=os.environ['HF_TOKEN']
+                                    )
+                                print(f'✅ Uploaded {relative_path} to {model_repo_id}')
+                            except Exception as e:
+                                print(f'❌ Failed to upload {relative_path}: {e}')
+                else:
+                    print('❌ Export directory not found')
+            else:
+                print('❌ No export directories found')
+        else:
+            print('❌ Exports directory not found')
+        "
