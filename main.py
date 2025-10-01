@@ -17,33 +17,29 @@ sys.path.insert(0, str(project_root))
 
 def main():
     """Main entry point for builderbrain."""
-    parser = argparse.ArgumentParser(description="BuilderBrain: Compositional AI System")
+    parser = argparse.ArgumentParser(
+        description="BuilderBrain: Compositional AI System"
+    )
 
     parser.add_argument(
         "--mode",
         choices=["train", "serve", "eval", "demo"],
         default="demo",
-        help="Operation mode"
+        help="Operation mode",
     )
 
     parser.add_argument(
         "--scale",
         choices=["tiny", "small", "medium", "large", "production"],
         default="tiny",
-        help="Model scale for testing/production"
+        help="Model scale for testing/production",
     )
 
     parser.add_argument(
-        "--config",
-        type=str,
-        help="Configuration file path (overrides --scale)"
+        "--config", type=str, help="Configuration file path (overrides --scale)"
     )
 
-    parser.add_argument(
-        "--checkpoint",
-        type=str,
-        help="Model checkpoint path"
-    )
+    parser.add_argument("--checkpoint", type=str, help="Model checkpoint path")
 
     args = parser.parse_args()
 
@@ -122,21 +118,24 @@ def run_training(args):
         config = get_config_for_scale(args.scale)
 
     print(f"Training with {args.scale} scale configuration:")
-    print(f"  Model: {config['model']['type']} ({config['model']['hidden_size']} hidden)")
+    print(
+        f"  Model: {config['model']['type']} ({config['model']['hidden_size']} hidden)"
+    )
     print(f"  Programs: {config['model']['num_programs']}")
     print(f"  Batch size: {config['training']['batch_size']}")
 
     trainer = BuilderBrainTrainer(config)
 
     # Run training
-    history = trainer.train(num_epochs=config['training']['num_epochs'])
+    history = trainer.train(num_epochs=config["training"]["num_epochs"])
 
     print("✅ Training completed!")
     print(f"Final loss: {history['total_loss'][-1]:.4f}")
 
     # Save training history
     import json
-    with open(f'training_history_{args.scale}.json', 'w') as f:
+
+    with open(f"training_history_{args.scale}.json", "w") as f:
         json.dump(history, f, indent=2)
     print(f"Training history saved to training_history_{args.scale}.json")
 

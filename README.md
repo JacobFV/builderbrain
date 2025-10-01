@@ -5,16 +5,17 @@
 
 ## 🚀 Quick Start
 
+> We are now live on GitHub! https://github.com/JacobFV/builderbrain.git
+
 ```bash
 # Run the demo
-python main.py --mode demo
+uv run python main.py --mode demo
 
-# Train the model (with virtual environment)
-source venv/bin/activate
-python main.py --mode train
+# Train the model
+uv run python main.py --mode train
 
 # Serve for inference
-python main.py --mode serve
+uv run python main.py --mode serve
 ```
 
 ## 📋 Overview
@@ -105,15 +106,16 @@ total_loss, normalized_losses = dual_optimizer.compute_lagrangian(
 ## 🔧 Installation
 
 ```bash
-# Create virtual environment
-python3 -m venv venv
+# Install uv (fast Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install dependencies
-source venv/bin/activate
-pip install numpy torch pyyaml transformers
+# Install dependencies and run demo
+uv run python main.py --mode demo
 
-# Run demo
-python main.py --mode demo
+# Or create virtual environment with uv (optional)
+uv venv
+source .venv/bin/activate
+uv sync  # Install all dependencies from pyproject.toml
 ```
 
 ## 📚 Documentation

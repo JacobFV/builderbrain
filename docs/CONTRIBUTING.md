@@ -338,12 +338,14 @@ What this PR does and why
 git clone https://github.com/your-org/builderbrain.git
 cd builderbrain
 
-# Set up virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install dependencies
-pip install -e ".[dev]"
+uv sync  # Install all dependencies including dev tools
+# Or activate virtual environment (optional)
+uv venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ```
 
 **development tools:**
@@ -357,17 +359,17 @@ pip install -e ".[dev]"
 **local testing:**
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run specific test categories
-pytest tests/unit/
-pytest tests/integration/
+uv run pytest tests/unit/
+uv run pytest tests/integration/
 
 # Run with coverage
-pytest --cov=bb_core --cov-report=html
+uv run pytest --cov=bb_core --cov-report=html
 
 # Run performance tests
-pytest tests/system/test_performance.py --benchmark-only
+uv run pytest tests/system/test_performance.py --benchmark-only
 ```
 
 **continuous integration:**

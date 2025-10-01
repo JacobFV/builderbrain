@@ -1,7 +1,45 @@
 [project]
 name = "builderbrain"
 version = "0.1.0"
-description = "Add your description here"
+description = "Dual-rail compositional AI system"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    # Runtime dependencies
+    "torch>=2.0.0",
+    "transformers>=4.35.0",
+    "numpy>=1.25.0",
+    "pyyaml>=6.0.0",
+]
+
+[dependency-groups]
+dev = [
+    # Development tools
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "flake8>=6.0.0",
+    "pytest>=7.4.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.3.0",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
