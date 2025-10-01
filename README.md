@@ -1,207 +1,137 @@
-# builderbrain
+# BuilderBrain: Dual-Rail Compositional AI System
 
-> build, don’t just search.
-> a dual-rail extension to pretrained transformers that learns reusable skills, executable plans, and safe compositional reasoning across domains.
+> **Build, don't just search.**
+> A dual-rail extension to pretrained transformers that learns reusable skills, executable plans, and safe compositional reasoning across domains.
 
-## INTERNAL README
+## 🚀 Quick Start
 
-**status:** pre-alpha, unstable, expect breakage.
-**audience:** internal MLEs. not for public release.
+```bash
+# Run the demo
+python main.py --mode demo
 
----
+# Train the model (with virtual environment)
+source venv/bin/activate
+python main.py --mode train
 
-## 0. guiding principle
-
-transformers memorize. we need **composition**.
-→ bolt a **builder rail** onto a frozen gpt-oss-20b/120b, and force it to:
-
-* represent **skills** as discrete programs,
-* emit **plan graphs** that are executable + auditable,
-* obey **grammars**,
-* stay inside **safety rails**.
-
-no vibes, no magic. just bias the system toward *buildability*.
-
----
-
-## 1. architecture (mental model)
-
-```
-           base rail (frozen oss 20b/120b)
-      ────────────────────────────────
-      h^B_ℓ ──────────────────────▶
-
-           builder rail (learned comp)
-      ────────────────────────────────
-      h^C_ℓ = CompBlock(h^C_ℓ, h^B_ℓ)
-         + program adapters z_t
-         + latent call DAG G_t
-
-           gating
-      ────────────────────────────────
-      h_ℓ = α_ℓ ⊙ h^C_ℓ + (1−α_ℓ) ⊙ h^B_ℓ
+# Serve for inference
+python main.py --mode serve
 ```
 
-* **base rail (B):** oss transformer. no online updates except rare LoRA merges.
-* **builder rail (C):** ssm/gru/attn hybrids, cross-attn into B.
-* **program library:** K discrete skills (ST-gumbel). adapters = LoRA/hypernets.
-* **call DAG:** latent plan graph; later validated/executed.
-* **gates α:** per-layer, capped by global budget (\bar α). grows only when metrics improve.
+## 📋 Overview
 
----
+BuilderBrain extends large language models with a secondary "builder rail" that learns to compose discrete skills into executable plans. The system maintains the leverage of pretrained models while adding:
 
-## 2. objectives
+- **Compositional reasoning** via discrete program skills
+- **Explicit planning** with DAG-based execution graphs
+- **Grammar constraints** for structured outputs
+- **Safety invariants** with automatic rollback
+- **Multi-objective optimization** with dual constraints
 
-* **primary:** lm loss / decision loss.
-* **constraints (dual variables, not free weights):**
+## 🏗️ Architecture
 
-  * `cfs_energy`: grammar prior (cfg/peg).
-  * `g2g_loss`: graph recon.
-  * `build_loss`: hidden ≈ composition of past skills.
-  * `reuse_loss`: encourage reusing skill tokens; penalize new param bloat.
-  * `kl_budget`: keep policy divergence bounded.
-  * `calibration_loss`: prequential ece.
-* **safety (hard):** lyapunov (V_s) must not increase post-update/promotion.
-
-### lagrangian
-
-[
-L = L_{\text{task}} + \sum_k \lambda_k (\hat \ell_k - c_k), \quad
-\lambda_k \gets [\lambda_k + η(\hat \ell_k - c_k)]_+
-]
-
-* use **rank/winsor normalization** per loss.
-* resolve gradient conflict via **pcgrad/cagrad**.
-
----
-
-## 3. priors
-
-* **grammars:** strict channels (api/json, robot dsl) → hard masks at decode. softer for chat/social.
-* **graphs:** each domain has plan schema (yaml) → codegen into checker.
-* **composition efficiency:** reuse > bloat. if adapters sprawl, you did it wrong.
-* **invariance:** same workflow, different skins → must hold.
-
----
-
-## 4. data
-
-* **instrumented traces:** tool calls, ui macros, phone flows, robot dsl, social pipelines.
-* **graph schemas:** derive from orchestration logs.
-* **grammars:** one per domain; keep minimal + precise.
-* **synthetic domain shifts:** skins, layouts, policy variants.
-
-note: no massive re-pretrain. lean on oss weights; builder rail soaks structure.
-
----
-
-## 5. training phases
-
-1. **stage0 boot:**
-
-   * load oss base, freeze.
-   * insert builder rail + gates (α≈0.05).
-   * init program adapters (K≈32).
-   * wire parsers, schemas.
-
-2. **stage1 offline:**
-
-   * optimize task + constraints.
-   * watch duals, cfs violation rate, ged, grad cosines.
-   * slowly lift (\bar α) if compositional metrics improve.
-
-3. **stage2 planner (optional):**
-
-   * small wm (rssm w/ shortcut forcing).
-   * policy/value in wm.
-   * tool/robot gating via evsi.
-
-4. **stage3 runtime:**
-
-   * decode w/ grammar masks.
-   * plan check every dag.
-   * fallback to base rail on violation.
-
-5. **stage4 continual:**
-
-   * adapters-only online learning.
-   * promotion requires shadow eval + (V_s) gate + kl trust region.
-   * auto-rollback on fail.
-
----
-
-## 6. evaluation must-pass
-
-* **skill stacking:** new tasks mastered w/ sublinear param growth.
-* **ablations:** removing skills kills compositional perf.
-* **syntax:** zero invalid api/json; < threshold elsewhere.
-* **graph fidelity:** ged low under domain shift.
-* **takeover sanity:** as (\bar α↑), compositional win-rate ↑, safety flat.
-* **ops:** refund errors, pii leaks, robot near-misses ↓.
-
----
-
-## 7. repo structure (enforced)
-
+### Dual-Rail Design
 ```
-bb_core/    # pure math/protocols, no torch
-bb_nn/      # torch impls
-bb_train/   # training loops, data, eval
-bb_runtime/ # serving, decode, plan exec
-bb_safety/  # Vs, shadow eval, promotion
-bb_domains/ # plugins per domain (api_json, robots, phone, social)
-bb_infra/   # logging, config, ci
-tests/      # unit, property, golden, e2e
+Base Rail (Frozen) ──────────────────▶ h^B_{ℓ+1}
+                     │
+Builder Rail ────────┼─▶ h^C_{ℓ+1}
+                     │
+Program Adapters ────┼─▶ z_t (discrete skills)
+                     │
+Fusion Gates ────────┼─▶ α_ℓ (gating values)
+                     │
+Latent Plans ────────┼─▶ 𝓖_t (DAG structures)
 ```
 
-* import rules enforced (importlinter).
-* grammars + schemas live in `bb_domains/*`. codegen into parsers + checkers.
-* **do not** import training code into runtime.
+### Key Components
+
+- **bb_core/**: Mathematical foundations and protocols
+- **bb_nn/**: Dual-rail neural network architecture
+- **bb_priors/**: Grammar parsers and token masking
+- **bb_runtime/**: Plan validation and execution
+- **bb_losses/**: Multi-objective constraint losses
+- **bb_train/**: Training pipeline and orchestration
+- **bb_safety/**: Safety invariants and promotion gates
+
+## 🎯 Core Features
+
+### 1. Grammar-Constrained Generation
+```python
+# JSON grammar enforcement
+grammar = JSONGrammar()
+mask = GrammarMask(grammar, tokenizer, strict=True)
+constrained_logits = mask(logits, prefix)
+```
+
+### 2. Plan Validation & Execution
+```python
+# Validate plan DAG
+checker = PlanChecker("robot_schema.yaml")
+result = checker.validate_plan(plan_dag)
+
+# Execute if valid
+if result.valid:
+    executor = PlanExecutor(tool_adapters)
+    await executor.execute_plan(plan_dag, context)
+```
+
+### 3. Dual Constraint Optimization
+```python
+# Multi-objective training
+dual_optimizer = DualOptimizer(constraint_configs)
+total_loss, normalized_losses = dual_optimizer.compute_lagrangian(
+    task_loss, constraint_losses
+)
+```
+
+## 📊 Status
+
+✅ **Implemented Core Systems:**
+- Dual-rail neural architecture
+- Grammar parsing and token masking
+- Plan schemas and validation
+- Multi-objective loss functions
+- Training pipeline
+- Runtime execution system
+
+🚧 **In Development:**
+- Model heads (graphs, calibration, safety)
+- World model for planning
+- Safety invariants and promotion gates
+- Domain-specific plugins
+- Comprehensive testing
+
+## 🔧 Installation
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Install dependencies
+source venv/bin/activate
+pip install numpy torch pyyaml transformers
+
+# Run demo
+python main.py --mode demo
+```
+
+## 📚 Documentation
+
+- **[DESIGN.md](docs/DESIGN.md)**: System rationale and tradeoffs
+- **[MATH_SPEC.md](docs/MATH_SPEC.md)**: Mathematical derivations
+- **[GRAMMAR_GUIDE.md](docs/GRAMMAR_GUIDE.md)**: Grammar authoring guide
+- **[PLAN_SCHEMA_GUIDE.md](docs/PLAN_SCHEMA_GUIDE.md)**: Plan schema design
+- **[LOSS_BANK.md](docs/LOSS_BANK.md)**: Loss function specifications
+- **[DUAL_OPTIMIZER.md](docs/DUAL_OPTIMIZER.md)**: Constraint optimization
+- **[PROGRAM_SKILLS.md](docs/PROGRAM_SKILLS.md)**: Skill lifecycle management
+- **[WORLD_MODEL.md](docs/WORLD_MODEL.md)**: Planning world model
+- **[SAFETY_SPEC.md](docs/SAFETY_SPEC.md)**: Safety invariants
+
+## 🎯 Mission
+
+BuilderBrain aims to transform large language models from passive pattern-matchers into active compositional reasoners. By maintaining pretrained capabilities while adding structured planning and safety constraints, we enable deployment in high-stakes domains like robotics, finance, and social platforms.
+
+**Key Insight:** Composition over memorization. Skills over scripts. Plans over prompts.
 
 ---
 
-## 8. safety invariants
-
-* builder rail only online-trained modules.
-* plans must pass checker before execution.
-* promotion requires battery pass, (V_s) non-increase, kl bound.
-* logs = immutable artifacts (model hash + grammar/schema hash + config).
-
----
-
-## 9. what will break (known pain)
-
-* **wireheading attempts:** builder may try to game cfs/reuse losses. duals keep it bounded, but audit covariance.
-* **fake graphs:** model can output pretty but unused dags. fix = counterfactual execution: reward only if chosen plan > alt.
-* **adapter sprawl:** l1 + cap birthrate, plus merge/distill.
-* **grammar bottleneck:** if over-tight, creativity tanks. soften energy; keep hard mask only where correctness matters.
-* **compute:** dags + pcgrad = overhead. profile and prune.
-
----
-
-## 10. rules of engagement
-
-* all new domains go in `bb_domains/*`. add `grammar.peg`, `plan_schema.yaml`, `tool_adapters.py`.
-* always write golden tests for grammar + plan schemas.
-* never bypass planchecker for side-effects.
-* promotion must run through `bb_safety.promote.gate`. no shortcuts.
-* logs must include: duals, grad cosines, cfs rate, ged, evsi, Vs delta.
-
----
-
-## 11. near-term milestones
-
-* [ ] m0: dual-rail skeleton, gates, program library, dummy grammars.
-* [ ] m1: offline train on synthetic domain; reduce cfs+g2g+build losses.
-* [ ] m2: syntax-aware decode + planchecker.
-* [ ] m3: adapters-only online learning + promotion gate stub.
-* [ ] m4: wm + evsi tool gating.
-* [ ] m5: real traces (api/json + phone flows) → valid plans.
-
----
-
-## 12. ethos
-
-this is not “product polish.” this is **research infra for composition bias**.
-expect half the code to be thrown away. measure everything. falsify aggressively.
-remember: **the base rail is memory. the builder rail must become construction.**
+*This system is designed for researchers and engineers building safe, compositional AI systems. Contributions welcome - see [CONTRIBUTING.md](docs/CONTRIBUTING.md) for guidelines.*
