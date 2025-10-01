@@ -14,11 +14,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 
-from ..bb_nn.dual_rail import DualRail
-from ..bb_losses.dual_optimizer import DualOptimizer
-from ..bb_losses.loss_functions import CompositeLoss, GrammarLoss, GraphToGraphLoss
-from ..bb_priors.grammar_energy import GrammarEnergy
-from ..bb_runtime.plan_checker import PlanChecker
+from bb_nn.dual_rail import DualRail
+from bb_losses.dual_optimizer import DualOptimizer
+from bb_losses.loss_functions import CompositeLoss, GrammarLoss, GraphToGraphLoss
+from bb_priors.grammar_energy import GrammarEnergy
+from bb_runtime.plan_checker import PlanChecker
 
 
 class BuilderBrainTrainer:
@@ -42,6 +42,9 @@ class BuilderBrainTrainer:
 
         # Initialize data loader
         self.data_loader = self._initialize_data_loader()
+
+        # Initialize composite loss
+        self.composite_loss = self._initialize_composite_loss()
 
         # Training state
         self.step = 0
@@ -113,7 +116,7 @@ class BuilderBrainTrainer:
 
         # Grammar loss
         if self.config['constraints']['grammar']['enabled']:
-            from ..bb_priors.cfg_parser import JSONGrammar
+            from bb_priors.cfg_parser import JSONGrammar
             grammar = JSONGrammar()
             grammar_energy = GrammarEnergy(grammar, None)  # Would need tokenizer
             losses['grammar'] = GrammarLoss(grammar_energy)
@@ -126,17 +129,16 @@ class BuilderBrainTrainer:
 
         return losses
 
+    def _initialize_composite_loss(self) -> CompositeLoss:
+        """Initialize composite loss with dual optimizer."""
+        return CompositeLoss(self.dual_optimizer, self.loss_functions)
+
     def _initialize_data_loader(self) -> DataLoader:
         """Initialize training data loader."""
-        # Simplified - in practice would load actual training data
-        return DataLoader(
-            dataset=torch.utils.data.TensorDataset(
-                torch.randint(0, 1000, (1000, 128)),  # Dummy data
-                torch.randint(0, 1000, (1000, 128))
-            ),
-            batch_size=self.config['training']['batch_size'],
-            shuffle=True
-        )
+        from .data_loader import BuilderBrainDataLoader
+
+        data_loader = BuilderBrainDataLoader(self.config)
+        return data_loader.get_train_loader()
 
     def train_step(self, batch: Tuple[torch.Tensor, torch.Tensor]) -> Dict[str, float]:
         """Execute a single training step."""
@@ -159,7 +161,7 @@ class BuilderBrainTrainer:
         }
 
         # Compute composite loss with constraints
-        total_loss, constraint_losses = self.loss_functions['composite'](
+        total_loss, constraint_losses = self.composite_loss(
             task_loss, model_outputs, constraint_targets
         )
 
@@ -237,7 +239,7 @@ class BuilderBrainTrainer:
 
             # Print progress
             if epoch % 10 == 0:
-                print(f"Epoch {epoch}: Loss = {epoch_metrics['avg_loss']".4f"}")
+                print(f"Epoch {epoch}: Loss = {epoch_metrics['avg_loss']:.4f}")
 
                 # Print dual variables
                 duals = self.dual_optimizer.get_dual_values()
@@ -251,7 +253,7 @@ class BuilderBrainTrainer:
         end_time = time.time()
         training_time = end_time - start_time
 
-        print(f"Training completed in {training_time".2f"} seconds")
+        print(f"Training completed in {training_time:.2f} seconds")
 
         return training_history
 

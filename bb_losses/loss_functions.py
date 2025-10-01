@@ -8,7 +8,7 @@ from typing import Dict, List, Any, Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from ..bb_priors.grammar_energy import GrammarEnergy
+from bb_priors.grammar_energy import GrammarEnergy
 
 
 class GrammarLoss(nn.Module):

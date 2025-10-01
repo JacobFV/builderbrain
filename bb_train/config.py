@@ -7,6 +7,11 @@ Loads and manages configurations for different model scales and use cases.
 import yaml
 from pathlib import Path
 from typing import Dict, Any
+import sys
+import os
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 
 def load_config(config_path: str) -> Dict[str, Any]:

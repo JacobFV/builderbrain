@@ -4,11 +4,11 @@ Dual optimizer for multi-objective constraint satisfaction.
 Manages Lagrangian multipliers and constraint targets for stable multi-objective training.
 """
 
-from typing import Dict, List, Any, Optional, Callable
+from typing import Dict, List, Any, Optional, Callable, Tuple
 import torch
 import torch.nn as nn
 import numpy as np
-from ..bb_core.math_utils import ConstraintManager, RankNormalizer, WinsorNormalizer
+from bb_core.math_utils import ConstraintManager, RankNormalizer, WinsorNormalizer
 
 
 class DualOptimizer(nn.Module):

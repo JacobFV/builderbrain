@@ -58,7 +58,8 @@ class DualRail(nn.Module):
         self.fusion_gates = FusionGates(hidden_size, num_layers, alpha_cap)
 
         # Final language model head (shared)
-        self.lm_head = nn.Linear(hidden_size, base_model.vocab_size)
+        vocab_size = getattr(base_model, 'vocab_size', 50257)  # Default GPT-2 vocab size
+        self.lm_head = nn.Linear(hidden_size, vocab_size)
 
         # Initialize weights
         self._init_weights()
@@ -67,7 +68,9 @@ class DualRail(nn.Module):
         """Initialize model weights."""
         # Gates are initialized to favor base rail initially
         for gate in self.fusion_gates.gates:
-            nn.init.constant_(gate.weight, -2.0)  # Bias toward alpha = 0
+            # Initialize the Linear layer within the Sequential
+            if hasattr(gate, 'weight'):
+                nn.init.constant_(gate.weight, -2.0)  # Bias toward alpha = 0
 
         # LM head initialization
         nn.init.normal_(self.lm_head.weight, mean=0.0, std=0.02)
