@@ -1,10 +1,8 @@
-version: '3.8'
-
 services:
   # Main BuilderBrain inference API
   builderbrain-api:
     build:
-      context: ..
+      context: ../..
       dockerfile: huggingface_pipeline/deployment/Dockerfile
     ports:
       - "8000:8000"
@@ -25,7 +23,7 @@ services:
   # Dashboard service
   dashboard:
     build:
-      context: ..
+      context: ../..
       dockerfile: builderbrain_dashboard/Dockerfile
     ports:
       - "8501:8501"
@@ -39,7 +37,7 @@ services:
   # Training service (optional)
   training:
     build:
-      context: ..
+      context: ../..
       dockerfile: huggingface_pipeline/deployment/Dockerfile
     command: ["python", "-m", "huggingface_pipeline.training_integration.hf_trainer"]
     environment:
@@ -57,7 +55,7 @@ services:
   # Model export service
   model-export:
     build:
-      context: ..
+      context: ../..
       dockerfile: huggingface_pipeline/deployment/Dockerfile
     command: ["python", "-m", "huggingface_pipeline.model_export.export"]
     environment:
@@ -76,7 +74,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/:/etc/prometheus/
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -84,13 +82,14 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--storage.tsdb.retention.time=200h'
       - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
     restart: unless-stopped
 
   # Monitoring service (Grafana)
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:

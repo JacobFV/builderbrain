@@ -1,4 +1,4 @@
-# Dockerfile for BuilderBrain inference API
+# Dockerfile for BuilderBrain Dashboard
 FROM python:3.11-slim
 
 # Set environment variables
@@ -35,11 +35,11 @@ COPY . ./
 RUN rm -rf .venv
 
 # Expose port
-EXPOSE 8000
+EXPOSE 8501
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:8501/_stcore/health || exit 1
 
-# Start the application as root (needed for uv to create virtual environment)
-CMD ["uv", "run", "uvicorn", "huggingface_pipeline.inference_api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start the dashboard as root (needed for uv to create virtual environment)
+CMD ["uv", "run", "streamlit", "run", "builderbrain_dashboard/dashboard/app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]
