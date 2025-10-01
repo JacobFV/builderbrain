@@ -201,16 +201,27 @@ class ConstraintManager:
             self.duals[name] = max(0.0, min(self.lambda_max,
                           self.duals[name] + self.eta_lambda * delta))
 
+    def normalize_losses(self, raw_losses: Dict[str, float]) -> Dict[str, float]:
+        """Normalize multiple constraint losses."""
+        normalized = {}
+        for name, raw_loss in raw_losses.items():
+            if name in self.normalizers:
+                normalized[name] = self.normalizers[name](np.array([raw_loss]))[0]
+            else:
+                normalized[name] = raw_loss  # No normalization if no normalizer set
+        return normalized
+
     def get_lagrangian_contribution(self, raw_losses: Dict[str, float]) -> float:
         """Compute the Lagrangian constraint penalty."""
         total = 0.0
-        for name, raw_loss in raw_losses.items():
+        normalized_losses = self.normalize_losses(raw_losses)
+
+        for name, normalized_loss in normalized_losses.items():
             if name not in self.duals:
                 continue
 
-            normalized = self.normalizers[name](np.array([raw_loss]))[0]
             target = getattr(self, '_targets', {}).get(name, 0.0)
-            total += self.duals[name] * (normalized - target)
+            total += self.duals[name] * (normalized_loss - target)
 
         return total
 

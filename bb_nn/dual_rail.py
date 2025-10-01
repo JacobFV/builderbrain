@@ -83,12 +83,31 @@ class DualRail(nn.Module):
         hidden_states = []
 
         def hook_fn(module, input, output):
-            hidden_states.append(output)
+            # Handle both tensor and tuple outputs
+            if isinstance(output, tuple):
+                hidden_states.append(output[0])  # Take first element if tuple
+            else:
+                hidden_states.append(output)
 
         # Register hooks to capture hidden states
         hooks = []
-        for layer in self.base_model.transformer.h:  # Assuming GPT-style architecture
-            hooks.append(layer.register_forward_hook(hook_fn))
+
+        # Try different architectures
+        if hasattr(self.base_model, 'transformer') and hasattr(self.base_model.transformer, 'h'):
+            # GPT-style architecture
+            for layer in self.base_model.transformer.h:
+                hooks.append(layer.register_forward_hook(hook_fn))
+        elif hasattr(self.base_model, 'model') and hasattr(self.base_model.model, 'layers'):
+            # LLaMA/OPT-style architecture
+            for layer in self.base_model.model.layers:
+                hooks.append(layer.register_forward_hook(hook_fn))
+        elif hasattr(self.base_model, 'layers'):
+            # Generic layers attribute
+            for layer in self.base_model.layers:
+                hooks.append(layer.register_forward_hook(hook_fn))
+        else:
+            # Fallback: just run forward pass and return dummy states
+            print("Warning: Could not find model layers for hooking")
 
         # Forward pass
         with torch.no_grad():
@@ -97,6 +116,13 @@ class DualRail(nn.Module):
         # Remove hooks
         for hook in hooks:
             hook.remove()
+
+        # If no hidden states captured, create dummy ones
+        if not hidden_states:
+            print("Warning: No hidden states captured, creating dummy states")
+            batch_size, seq_len = input_ids.shape
+            dummy_state = torch.zeros(batch_size, seq_len, self.hidden_size, device=input_ids.device)
+            hidden_states = [dummy_state] * self.num_layers
 
         return hidden_states
 

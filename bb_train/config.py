@@ -7,11 +7,6 @@ Loads and manages configurations for different model scales and use cases.
 import yaml
 from pathlib import Path
 from typing import Dict, Any
-import sys
-import os
-
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 
 def load_config(config_path: str) -> Dict[str, Any]:
@@ -71,6 +66,10 @@ def create_config_tiny() -> Dict[str, Any]:
             'eta_lambda': 1e-2,
             'lambda_max': 10.0,
             'num_epochs': 10
+        },
+        'data': {
+            'max_length': 128,
+            'vocab_size': 1000
         }
     }
 
@@ -109,6 +108,10 @@ def create_config_small() -> Dict[str, Any]:
             'eta_lambda': 1e-2,
             'lambda_max': 20.0,
             'num_epochs': 50
+        },
+        'data': {
+            'max_length': 512,
+            'vocab_size': 50257
         }
     }
 
@@ -159,5 +162,9 @@ def create_config_production() -> Dict[str, Any]:
             'num_epochs': 100,
             'gradient_checkpointing': True,
             'mixed_precision': True
+        },
+        'data': {
+            'max_length': 1024,
+            'vocab_size': 50257
         }
     }

@@ -110,7 +110,7 @@ class ProgramAdapter(nn.Module):
             prog_embed = prog_embed.unsqueeze(0).unsqueeze(0).expand(batch_size, seq_len, -1)
 
             # Program-specific adaptation
-            prog_prob = program_probs[:, prog_id].unsqueeze(-1)  # (batch, 1)
+            prog_prob = program_probs[:, prog_id].unsqueeze(-1).unsqueeze(-1)  # (batch, 1, 1)
             adapted = self.adapters[prog_id](hidden_state + prog_embed)
             adapted = adapted * prog_prob  # Weight by program probability
 

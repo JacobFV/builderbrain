@@ -176,13 +176,13 @@ class BuilderBrainTrainer:
         torch.nn.utils.clip_grad_norm_(self.model.get_trainable_params(), 1.0)
         for param_group in self.model.get_trainable_params():
             if param_group.grad is not None:
-                param_group.data.add_(-self.config['training']['learning_rate'], param_group.grad)
+                param_group.data.add_(param_group.grad, alpha=-self.config['training']['learning_rate'])
 
         # Track metrics
         metrics = {
             'total_loss': float(total_loss.item()),
             'task_loss': float(task_loss.item()),
-            'constraint_losses': {k: float(v.item()) for k, v in constraint_losses.items()},
+            'constraint_losses': {k: float(v) for k, v in constraint_losses.items()},
             'dual_variables': self.dual_optimizer.get_dual_values(),
             'step': self.step
         }
