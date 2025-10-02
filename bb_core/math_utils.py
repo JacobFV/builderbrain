@@ -39,6 +39,8 @@ class RankNormalizer(Normalizer):
         # Add new values to history
         if isinstance(values, (int, float)):
             values = np.array([values])
+        elif isinstance(values, list):
+            values = np.array(values)
         self.history.extend(values.flatten())
 
         # Keep only recent history
@@ -46,7 +48,11 @@ class RankNormalizer(Normalizer):
             self.history = self.history[-self.window_size:]
 
         if len(self.history) < 2:
-            return np.zeros_like(values)
+            result = np.zeros_like(values)
+            # Return scalar if input was scalar or 1-element array
+            if result.ndim == 0 or (result.ndim == 1 and len(result) == 1):
+                return float(result.flatten()[0])
+            return result
 
         # Compute empirical CDF and map to [-1, 1]
         ranks = []
@@ -55,7 +61,11 @@ class RankNormalizer(Normalizer):
             normalized = 2 * rank - 1
             ranks.append(normalized)
 
-        return np.array(ranks).reshape(values.shape)
+        result = np.array(ranks).reshape(values.shape)
+        # Return scalar if input was scalar or 1-element array
+        if result.ndim == 0 or (result.ndim == 1 and len(result) == 1):
+            return float(result.flatten()[0])
+        return result
 
     def state_dict(self) -> Dict[str, Any]:
         return {"window_size": self.window_size, "history": self.history}
@@ -79,6 +89,8 @@ class WinsorNormalizer(Normalizer):
         # Add new values to history
         if isinstance(values, (int, float)):
             values = np.array([values])
+        elif isinstance(values, list):
+            values = np.array(values)
         self.history.extend(values.flatten())
 
         # Keep only recent history
@@ -86,7 +98,11 @@ class WinsorNormalizer(Normalizer):
             self.history = self.history[-self.window_size:]
 
         if len(self.history) < 2:
-            return np.zeros_like(values)
+            result = np.zeros_like(values)
+            # Return scalar if input was scalar or 1-element array
+            if result.ndim == 0 or (result.ndim == 1 and len(result) == 1):
+                return float(result.flatten()[0])
+            return result
 
         # Compute robust statistics
         arr = np.array(self.history)
@@ -94,12 +110,21 @@ class WinsorNormalizer(Normalizer):
         self._std = np.std(arr)
 
         if self._std == 0:
-            return np.zeros_like(values)
+            result = np.zeros_like(values)
+            # Return scalar if input was scalar or 1-element array
+            if result.ndim == 0 or (result.ndim == 1 and len(result) == 1):
+                return float(result.flatten()[0])
+            return result
 
         # Winsorize and z-score
         clipped = np.clip(values, self._mean - self.tau * self._std,
                          self._mean + self.tau * self._std)
-        return (clipped - self._mean) / self._std
+        result = (clipped - self._mean) / self._std
+
+        # Return scalar if input was scalar or 1-element array
+        if result.ndim == 0 or (result.ndim == 1 and len(result) == 1):
+            return float(result.flatten()[0])
+        return result
 
     def state_dict(self) -> Dict[str, Any]:
         return {
@@ -174,8 +199,10 @@ class ConstraintManager:
     """Manages dual variables for constraint satisfaction."""
 
     def __init__(self, eta_lambda: float = 1e-2, lambda_max: float = 50.0):
-        self.eta_lambda = eta_lambda
-        self.lambda_max = lambda_max
+        # Ensure eta_lambda is a float (YAML may load as string)
+        self.eta_lambda = float(eta_lambda) if not isinstance(eta_lambda, float) else eta_lambda
+        # Ensure lambda_max is a float
+        self.lambda_max = float(lambda_max) if not isinstance(lambda_max, float) else lambda_max
         self.duals: Dict[str, float] = {}
         self.normalizers: Dict[str, Normalizer] = {}
 
@@ -190,16 +217,34 @@ class ConstraintManager:
             if name not in self.duals:
                 continue
 
+            # Get current dual value and ensure it's a scalar
+            current_dual = self.duals[name]
+
+            # Ensure dual is a scalar
+            if isinstance(current_dual, (list, np.ndarray)):
+                current_dual = float(current_dual[0]) if len(current_dual) > 0 else 0.0
+            else:
+                current_dual = float(current_dual)
+
             # Get target for this constraint
             target = getattr(self, '_targets', {}).get(name, 0.0)
+            target = float(target)
 
             # Normalize the loss
-            normalized = self.normalizers[name](np.array([raw_loss]))[0]
+            normalized = self.normalizers[name](np.array([raw_loss]))
+            if isinstance(normalized, np.ndarray):
+                normalized = float(normalized[0])
+            else:
+                normalized = float(normalized)
 
             # Update dual variable
             delta = normalized - target
-            self.duals[name] = max(0.0, min(self.lambda_max,
-                          self.duals[name] + self.eta_lambda * delta))
+
+            # Ensure eta_lambda is a float
+            eta_lambda = float(self.eta_lambda) if not isinstance(self.eta_lambda, float) else self.eta_lambda
+
+            new_dual = max(0.0, min(self.lambda_max, current_dual + eta_lambda * delta))
+            self.duals[name] = new_dual
 
     def normalize_losses(self, raw_losses: Dict[str, float]) -> Dict[str, float]:
         """Normalize multiple constraint losses."""
@@ -211,9 +256,13 @@ class ConstraintManager:
                     loss_value = float(raw_loss.detach().cpu().numpy())
                 else:
                     loss_value = float(raw_loss)
-                normalized[name] = self.normalizers[name](np.array([loss_value]))[0]
+                normalized_val = self.normalizers[name](np.array([loss_value]))
+                if isinstance(normalized_val, np.ndarray):
+                    normalized[name] = float(normalized_val[0])
+                else:
+                    normalized[name] = float(normalized_val)
             else:
-                normalized[name] = raw_loss  # No normalization if no normalizer set
+                normalized[name] = float(raw_loss)  # No normalization if no normalizer set
         return normalized
 
     def get_lagrangian_contribution(self, raw_losses: Dict[str, float]) -> float:
@@ -225,8 +274,12 @@ class ConstraintManager:
             if name not in self.duals:
                 continue
 
-            target = getattr(self, '_targets', {}).get(name, 0.0)
-            total += self.duals[name] * (normalized_loss - target)
+            # Ensure types are correct
+            dual_val = float(self.duals[name])
+            norm_loss = float(normalized_loss)
+            target = float(getattr(self, '_targets', {}).get(name, 0.0))
+
+            total += dual_val * (norm_loss - target)
 
         return total
 

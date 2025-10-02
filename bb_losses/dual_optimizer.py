@@ -29,8 +29,10 @@ class DualOptimizer(nn.Module):
         super().__init__()
 
         self.constraint_configs = constraint_configs
-        self.eta_lambda = eta_lambda
-        self.lambda_max = lambda_max
+        # Ensure eta_lambda is a float (YAML may load as string)
+        self.eta_lambda = float(eta_lambda) if not isinstance(eta_lambda, float) else eta_lambda
+        # Ensure lambda_max is a float
+        self.lambda_max = float(lambda_max) if not isinstance(lambda_max, float) else lambda_max
         self.use_pcgrad = use_pcgrad
 
         # Initialize constraint manager
@@ -81,9 +83,9 @@ class DualOptimizer(nn.Module):
 
     def update_duals(self, normalized_losses: Dict[str, torch.Tensor]):
         """Update dual variables based on normalized constraint losses."""
-        self.constraint_manager.update_duals(
-            {k: float(v) for k, v in normalized_losses.items()}
-        )
+        # Convert to Python floats for the constraint manager
+        dual_updates = {k: float(v) for k, v in normalized_losses.items()}
+        self.constraint_manager.update_duals(dual_updates)
 
     def get_dual_values(self) -> Dict[str, float]:
         """Get current dual variable values."""

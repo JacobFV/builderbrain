@@ -239,9 +239,10 @@ class BuilderBrainTrainer:
 
         # Update model parameters
         torch.nn.utils.clip_grad_norm_(self.model.get_trainable_params(), 1.0)
+        learning_rate = float(self.config['training']['learning_rate'])
         for param_group in self.model.get_trainable_params():
             if param_group.grad is not None:
-                param_group.data.add_(param_group.grad, alpha=-self.config['training']['learning_rate'])
+                param_group.data.add_(param_group.grad, alpha=-learning_rate)
 
         # Track metrics
         metrics = {
