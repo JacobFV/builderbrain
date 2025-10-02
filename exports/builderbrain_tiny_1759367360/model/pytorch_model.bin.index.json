@@ -1,0 +1,10 @@
+{
+  "metadata": {
+    "total_size": 43
+  },
+  "weight_map": {
+    "model.embed_tokens.weight": "pytorch_model.bin",
+    "model.layers.0.weight": "pytorch_model.bin",
+    "lm_head.weight": "pytorch_model.bin"
+  }
+}
