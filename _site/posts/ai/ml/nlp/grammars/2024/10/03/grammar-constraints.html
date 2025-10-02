@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Grammar Constraints: Making AI Output Structured and Reliable | BuilderBrain - Dual-Rail Compositional AI</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Grammar Constraints: Making AI Output Structured and Reliable" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How BuilderBrain uses formal grammars to guarantee structured outputs like JSON, while maintaining the flexibility of neural generation." />
+<meta property="og:description" content="How BuilderBrain uses formal grammars to guarantee structured outputs like JSON, while maintaining the flexibility of neural generation." />
+<link rel="canonical" href="https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html" />
+<meta property="og:url" content="https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html" />
+<meta property="og:site_name" content="BuilderBrain - Dual-Rail Compositional AI" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-10-03T00:00:00-07:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Grammar Constraints: Making AI Output Structured and Reliable" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2024-10-03T00:00:00-07:00","datePublished":"2024-10-03T00:00:00-07:00","description":"How BuilderBrain uses formal grammars to guarantee structured outputs like JSON, while maintaining the flexibility of neural generation.","headline":"Grammar Constraints: Making AI Output Structured and Reliable","mainEntityOfPage":{"@type":"WebPage","@id":"https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html"},"url":"https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/builderbrain/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://your-username.github.io/builderbrain/feed.xml" title="BuilderBrain - Dual-Rail Compositional AI" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/builderbrain/">BuilderBrain - Dual-Rail Compositional AI</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Grammar Constraints: Making AI Output Structured and Reliable</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2024-10-03T00:00:00-07:00" itemprop="datePublished">Oct 3, 2024
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h2 id="the-problem-with-unstructured-ai-output">The Problem with Unstructured AI Output</h2>
+
+<p>Most language models generate free-form text, which is great for creative writing but problematic when you need:</p>
+
+<ul>
+  <li><strong>Structured data</strong> (JSON, XML, code)</li>
+  <li><strong>Consistent formatting</strong> (API responses, forms)</li>
+  <li><strong>Safety guarantees</strong> (no malformed outputs)</li>
+  <li><strong>Domain compliance</strong> (specific formats for finance, healthcare, etc.)</li>
+</ul>
+
+<h2 id="grammar-constraints-to-the-rescue">Grammar Constraints to the Rescue</h2>
+
+<p>BuilderBrain uses <strong>formal grammars</strong> to constrain generation while maintaining neural flexibility:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Traditional generation - anything goes
+</span><span class="n">model</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="sh">"</span><span class="s">Generate JSON</span><span class="sh">"</span><span class="p">)</span>  <span class="c1"># Could produce invalid JSON
+</span>
+<span class="c1"># Grammar-constrained generation - guarantees valid structure
+</span><span class="n">grammar</span> <span class="o">=</span> <span class="nc">JSONGrammar</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="nc">GrammarMask</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">constrained_logits</span> <span class="o">=</span> <span class="nf">mask</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+<span class="c1"># Only valid tokens allowed!
+</span></code></pre></div></div>
+
+<h2 id="how-grammar-constraints-work">How Grammar Constraints Work</h2>
+
+<h3 id="1-formal-grammar-definition">1. Formal Grammar Definition</h3>
+
+<p>We define what “valid” output looks like using <strong>Context-Free Grammars (CFG)</strong>:</p>
+
+<pre><code class="language-ebnf">value    &lt;- object / array / string / number / boolean / null
+object   &lt;- "{" pair ("," pair)* "}"
+pair     &lt;- string ":" value
+array    &lt;- "[" value ("," value)* "]"
+string   &lt;- "\"" char* "\""
+number   &lt;- "-"? digit+ ("." digit+)? (exp)?
+</code></pre>
+
+<h3 id="2-real-time-token-masking">2. Real-time Token Masking</h3>
+
+<p>At each generation step, the grammar parser determines which tokens are valid:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">next_valid_tokens</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sh">"""</span><span class="s">Get token IDs that can legally follow the current prefix.</span><span class="sh">"""</span>
+    <span class="c1"># Parse prefix to determine current state
+</span>    <span class="c1"># Return only tokens that maintain grammar validity
+</span>    <span class="k">return</span> <span class="n">valid_token_ids</span>
+</code></pre></div></div>
+
+<h3 id="3-two-constraint-modes">3. Two Constraint Modes</h3>
+
+<p><strong>Hard Constraints (Strict Domains):</strong></p>
+<ul>
+  <li>API responses, code generation, financial data</li>
+  <li>Invalid tokens get <code class="language-plaintext highlighter-rouge">-∞</code> logits</li>
+  <li>Guarantees 100% compliance</li>
+</ul>
+
+<p><strong>Soft Constraints (Flexible Domains):</strong></p>
+<ul>
+  <li>Creative writing, chat, social content</li>
+  <li>Invalid tokens get energy penalty</li>
+  <li>Allows creativity while encouraging structure</li>
+</ul>
+
+<h2 id="code-example-json-generation">Code Example: JSON Generation</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">bb_priors.cfg_parser</span> <span class="kn">import</span> <span class="n">JSONGrammar</span>
+<span class="kn">from</span> <span class="n">bb_priors.token_masks</span> <span class="kn">import</span> <span class="n">GrammarMask</span>
+<span class="kn">from</span> <span class="n">transformers</span> <span class="kn">import</span> <span class="n">GPT2Tokenizer</span>
+
+<span class="c1"># Load grammar and tokenizer
+</span><span class="n">grammar</span> <span class="o">=</span> <span class="nc">JSONGrammar</span><span class="p">()</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">GPT2Tokenizer</span><span class="p">.</span><span class="nf">from_pretrained</span><span class="p">(</span><span class="sh">'</span><span class="s">gpt2</span><span class="sh">'</span><span class="p">)</span>
+
+<span class="c1"># Create grammar mask
+</span><span class="n">mask</span> <span class="o">=</span> <span class="nc">GrammarMask</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Generate with constraints
+</span><span class="k">def</span> <span class="nf">generate_constrained_json</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="sh">'</span><span class="s">pt</span><span class="sh">'</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>  <span class="c1"># Max length
+</span>        <span class="c1"># Get model logits
+</span>        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="nf">no_grad</span><span class="p">():</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">.</span><span class="n">logits</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="c1"># Apply grammar constraints
+</span>        <span class="n">prefix</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">constrained_logits</span> <span class="o">=</span> <span class="nf">mask</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+
+        <span class="c1"># Sample next token
+</span>        <span class="n">next_token</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">multinomial</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="nf">softmax</span><span class="p">(</span><span class="n">constrained_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">input_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">cat</span><span class="p">([</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">next_token</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Stop if we generated closing brace
+</span>        <span class="k">if</span> <span class="n">next_token</span><span class="p">.</span><span class="nf">item</span><span class="p">()</span> <span class="o">==</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="sh">'</span><span class="s">}</span><span class="sh">'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h2 id="grammar-energy-soft-constraints">Grammar Energy: Soft Constraints</h2>
+
+<p>For flexible domains, we use <strong>grammar energy</strong> instead of hard masking:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">energy</span> <span class="o">=</span> <span class="n">grammar</span><span class="p">.</span><span class="nf">sequence_energy</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">energy</span> <span class="o">-</span> <span class="n">target_energy</span><span class="p">)</span>  <span class="c1"># Hinge loss
+</span></code></pre></div></div>
+
+<p>This encourages compliance while allowing some flexibility.</p>
+
+<h2 id="real-world-applications">Real-World Applications</h2>
+
+<h3 id="api-agents">API Agents</h3>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create_user"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"on_error"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retry"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="code-generation">Code Generation</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="business-logic">Business Logic</h3>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">workflow</span><span class="pi">:</span>
+  <span class="na">steps</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">validate_input</span>
+    <span class="pi">-</span> <span class="s">process_payment</span>
+    <span class="pi">-</span> <span class="s">send_confirmation</span>
+  <span class="na">on_failure</span><span class="pi">:</span> <span class="s">escalate_to_human</span>
+</code></pre></div></div>
+
+<h2 id="training-with-grammar-constraints">Training with Grammar Constraints</h2>
+
+<p>BuilderBrain trains with grammar constraints as part of the multi-objective optimization:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Grammar constraint in the loss
+</span><span class="n">grammar_loss</span> <span class="o">=</span> <span class="nc">GrammarLoss</span><span class="p">(</span><span class="n">grammar_energy</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">total_loss</span> <span class="o">=</span> <span class="n">task_loss</span> <span class="o">+</span> <span class="n">lambda_grammar</span> <span class="o">*</span> <span class="n">grammar_loss</span>
+</code></pre></div></div>
+
+<p>The model learns to generate structured outputs naturally.</p>
+
+<h2 id="benefits-of-grammar-constraints">Benefits of Grammar Constraints</h2>
+
+<ol>
+  <li><strong>Reliability</strong>: Structured outputs are always well-formed</li>
+  <li><strong>Safety</strong>: Prevents malformed or harmful outputs</li>
+  <li><strong>Interoperability</strong>: Consistent formats for APIs and tools</li>
+  <li><strong>Debugging</strong>: Clear structure makes issues easier to identify</li>
+  <li><strong>Domain Compliance</strong>: Meets specific formatting requirements</li>
+</ol>
+
+<h2 id="challenges-and-solutions">Challenges and Solutions</h2>
+
+<p><strong>Challenge</strong>: Grammar constraints can limit creativity
+<strong>Solution</strong>: Use soft constraints for creative domains, hard constraints for structured ones</p>
+
+<p><strong>Challenge</strong>: Complex grammars slow down generation
+<strong>Solution</strong>: Pre-compute valid token sets, use efficient parsing</p>
+
+<p><strong>Challenge</strong>: Grammar maintenance
+<strong>Solution</strong>: Versioned grammars with automated testing</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the next post, we’ll explore <a href="/ai/ml/robotics/planning/2024/10/04/plan-execution/">plan execution</a> - how BuilderBrain turns generated plans into actual actions.</p>
+
+<hr />
+
+<p><em>Grammar constraints represent the bridge between neural creativity and formal reliability. They ensure AI outputs are not just fluent, but also structured, safe, and useful.</em></p>
+
+  </div><a class="u-url" href="/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/builderbrain/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">BuilderBrain - Dual-Rail Compositional AI</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">BuilderBrain - Dual-Rail Compositional AI</li><li><a class="u-email" href="mailto:your-email@example.com">your-email@example.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/your-github-username"><svg class="svg-icon"><use xlink:href="/builderbrain/assets/minima-social-icons.svg#github"></use></svg> <span class="username">your-github-username</span></a></li><li><a href="https://www.twitter.com/your-twitter-handle"><svg class="svg-icon"><use xlink:href="/builderbrain/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">your-twitter-handle</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>A revolutionary approach to AI that extends pretrained transformers with compositional reasoning, formal grammars, and safety constraints. BuilderBrain builds, doesn&#39;t just search.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>

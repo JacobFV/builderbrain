@@ -1,0 +1,1332 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.3.4">Jekyll</generator><link href="https://your-username.github.io/builderbrain/feed.xml" rel="self" type="application/atom+xml" /><link href="https://your-username.github.io/builderbrain/" rel="alternate" type="text/html" /><updated>2025-10-01T22:13:17-07:00</updated><id>https://your-username.github.io/builderbrain/feed.xml</id><title type="html">BuilderBrain - Dual-Rail Compositional AI</title><subtitle>A revolutionary approach to AI that extends pretrained transformers with compositional reasoning, formal grammars, and safety constraints. BuilderBrain builds, doesn&apos;t just search.</subtitle><entry><title type="html">Training Methodology: Teaching AI to Build Safely</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/training/optimization/2024/10/06/training-methodology.html" rel="alternate" type="text/html" title="Training Methodology: Teaching AI to Build Safely" /><published>2024-10-06T00:00:00-07:00</published><updated>2024-10-06T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/training/optimization/2024/10/06/training-methodology</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/training/optimization/2024/10/06/training-methodology.html"><![CDATA[<h2 id="the-training-challenge">The Training Challenge</h2>
+
+<p>Training BuilderBrain is fundamentally different from training traditional language models. We need to teach the system to:</p>
+
+<ol>
+  <li><strong>Learn discrete skills</strong> (reusable building blocks)</li>
+  <li><strong>Compose them into plans</strong> (executable workflows)</li>
+  <li><strong>Respect formal grammars</strong> (structured outputs)</li>
+  <li><strong>Maintain safety invariants</strong> (prevent harm)</li>
+  <li><strong>Balance multiple objectives</strong> (task vs constraints)</li>
+</ol>
+
+<p>This requires a sophisticated training methodology that goes beyond simple next-token prediction.</p>
+
+<h2 id="multi-objective-optimization">Multi-Objective Optimization</h2>
+
+<p>BuilderBrain uses <strong>Lagrangian dual optimization</strong> to balance competing objectives:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Primary objective: task performance
+</span><span class="n">L_task</span> <span class="o">=</span> <span class="nf">cross_entropy_loss</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+
+<span class="c1"># Constraint objectives with Lagrange multipliers
+</span><span class="n">L_total</span> <span class="o">=</span> <span class="n">L_task</span> <span class="o">+</span> <span class="err">∑</span> <span class="n">λ_k</span> <span class="p">(</span><span class="n">L_k</span> <span class="o">-</span> <span class="n">c_k</span><span class="p">)</span>
+
+<span class="c1"># Dual variable updates
+</span><span class="n">λ_k</span> <span class="err">←</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">λ_k</span> <span class="o">+</span> <span class="n">η_λ</span> <span class="p">(</span><span class="n">L_k</span> <span class="o">-</span> <span class="n">c_k</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Where:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">L_task</code>: Primary language modeling loss</li>
+  <li><code class="language-plaintext highlighter-rouge">L_k</code>: Constraint losses (grammar, safety, plan consistency)</li>
+  <li><code class="language-plaintext highlighter-rouge">c_k</code>: Target values for each constraint</li>
+  <li><code class="language-plaintext highlighter-rouge">λ_k</code>: Learned Lagrange multipliers</li>
+</ul>
+
+<h2 id="constraint-types">Constraint Types</h2>
+
+<h3 id="1-grammar-constraints">1. Grammar Constraints</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">grammar_loss</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nf">grammar_energy</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">-</span> <span class="n">grammar_target</span><span class="p">)</span>
+<span class="c1"># Ensures structured outputs (JSON, code, etc.)
+</span></code></pre></div></div>
+
+<h3 id="2-plan-consistency">2. Plan Consistency</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">plan_loss</span> <span class="o">=</span> <span class="nf">graph_edit_distance</span><span class="p">(</span><span class="n">predicted_plan</span><span class="p">,</span> <span class="n">target_plan</span><span class="p">)</span>
+<span class="c1"># Ensures generated plans match execution traces
+</span></code></pre></div></div>
+
+<h3 id="3-safety-constraints">3. Safety Constraints</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">safety_loss</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nf">risk_energy</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="o">-</span> <span class="n">safety_threshold</span><span class="p">)</span>
+<span class="c1"># Prevents harmful or unsafe behavior
+</span></code></pre></div></div>
+
+<h3 id="4-composition-efficiency">4. Composition Efficiency</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">reuse_loss</span> <span class="o">=</span> <span class="o">-</span><span class="nf">entropy</span><span class="p">(</span><span class="n">program_selection</span><span class="p">)</span>  <span class="c1"># Encourage skill reuse
+</span><span class="n">param_loss</span> <span class="o">=</span> <span class="nc">L1_penalty</span><span class="p">(</span><span class="n">new_parameters</span><span class="p">)</span>  <span class="c1"># Limit parameter growth
+</span></code></pre></div></div>
+
+<h2 id="training-stages">Training Stages</h2>
+
+<h3 id="stage-1-foundation-training">Stage 1: Foundation Training</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Start with frozen base model
+</span><span class="n">model</span><span class="p">.</span><span class="nf">freeze_base_rail</span><span class="p">()</span>
+
+<span class="c1"># Train only builder components
+</span><span class="n">optimizer</span> <span class="o">=</span> <span class="nc">AdamW</span><span class="p">(</span><span class="n">builder_parameters</span><span class="p">)</span>
+
+<span class="c1"># Focus on basic composition
+</span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="c1"># Grammar constraints only
+</span>        <span class="n">loss</span> <span class="o">=</span> <span class="nf">grammar_constrained_loss</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="p">.</span><span class="nf">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="stage-2-multi-objective-training">Stage 2: Multi-Objective Training</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Enable all constraints
+</span><span class="n">optimizer</span> <span class="o">=</span> <span class="nc">DualOptimizer</span><span class="p">(</span><span class="n">constraint_configs</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+        <span class="c1"># Multi-objective loss
+</span>        <span class="n">task_loss</span><span class="p">,</span> <span class="n">constraint_losses</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="n">total_loss</span> <span class="o">=</span> <span class="n">dual_optimizer</span><span class="p">.</span><span class="nf">compute_lagrangian</span><span class="p">(</span><span class="n">task_loss</span><span class="p">,</span> <span class="n">constraint_losses</span><span class="p">)</span>
+
+        <span class="c1"># Update dual variables
+</span>        <span class="n">dual_optimizer</span><span class="p">.</span><span class="nf">update_duals</span><span class="p">(</span><span class="n">constraint_losses</span><span class="p">)</span>
+
+        <span class="n">optimizer</span><span class="p">.</span><span class="nf">step</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="stage-3-safety-hardening">Stage 3: Safety Hardening</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Add safety constraints
+</span><span class="n">safety_monitor</span> <span class="o">=</span> <span class="nc">SafetyMonitor</span><span class="p">(</span><span class="n">risk_threshold</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+    <span class="c1"># Shadow evaluation for safety
+</span>    <span class="n">shadow_risks</span> <span class="o">=</span> <span class="nf">shadow_evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Safety gate: reject unsafe updates
+</span>    <span class="k">if</span> <span class="ow">not</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">promotion_approved</span><span class="p">(</span><span class="n">shadow_risks</span><span class="p">):</span>
+        <span class="nf">rollback_model</span><span class="p">()</span>
+        <span class="k">continue</span>
+
+    <span class="c1"># Continue training with safety monitoring
+</span>    <span class="nf">train_with_safety_monitoring</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">safety_monitor</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="stage-4-production-deployment">Stage 4: Production Deployment</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Final safety validation
+</span><span class="n">production_risks</span> <span class="o">=</span> <span class="nf">evaluate_on_production_data</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+<span class="c1"># Promotion gate: strict safety requirements
+</span><span class="k">if</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">deployment_approved</span><span class="p">(</span><span class="n">production_risks</span><span class="p">):</span>
+    <span class="nf">deploy_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nf">reject_deployment</span><span class="p">(</span><span class="sh">"</span><span class="s">Safety requirements not met</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="data-preparation">Data Preparation</h2>
+
+<p>BuilderBrain requires specialized training data:</p>
+
+<h3 id="1-structured-examples">1. Structured Examples</h3>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"input"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Create a user account"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"structured_output"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create_user"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user@example.com"</span><span class="p">},</span><span class="w">
+    </span><span class="nl">"plan"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"validate_email"</span><span class="p">,</span><span class="w"> </span><span class="s2">"check_duplicates"</span><span class="p">,</span><span class="w"> </span><span class="s2">"create_account"</span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="2-grammar-examples">2. Grammar Examples</h3>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"text"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Generate valid JSON"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"grammar"</span><span class="p">:</span><span class="w"> </span><span class="s2">"json_grammar.cfg"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"valid_outputs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"{}"</span><span class="p">,</span><span class="w"> </span><span class="s2">"{</span><span class="se">\"</span><span class="s2">key</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">value</span><span class="se">\"</span><span class="s2">}"</span><span class="p">],</span><span class="w">
+  </span><span class="nl">"invalid_outputs"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"{invalid json}"</span><span class="p">,</span><span class="w"> </span><span class="s2">"no quotes"</span><span class="p">]</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="3-plan-examples">3. Plan Examples</h3>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">task</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Pick</span><span class="nv"> </span><span class="s">up</span><span class="nv"> </span><span class="s">red</span><span class="nv"> </span><span class="s">cube</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">place</span><span class="nv"> </span><span class="s">on</span><span class="nv"> </span><span class="s">blue</span><span class="nv"> </span><span class="s">platform"</span>
+<span class="na">plan</span><span class="pi">:</span>
+  <span class="na">nodes</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">id</span><span class="pi">:</span> <span class="s">move_to_cube</span>
+      <span class="na">action</span><span class="pi">:</span> <span class="s">move</span>
+      <span class="na">preconditions</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">gripper_open"</span><span class="pi">,</span> <span class="s2">"</span><span class="s">cube_visible"</span><span class="pi">]</span>
+    <span class="pi">-</span> <span class="na">id</span><span class="pi">:</span> <span class="s">grasp_cube</span>
+      <span class="na">action</span><span class="pi">:</span> <span class="s">grasp</span>
+      <span class="na">preconditions</span><span class="pi">:</span> <span class="pi">[</span><span class="s2">"</span><span class="s">at_cube_location"</span><span class="pi">]</span>
+  <span class="na">edges</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="na">from</span><span class="pi">:</span> <span class="s">move_to_cube</span>
+      <span class="na">to</span><span class="pi">:</span> <span class="s">grasp_cube</span>
+      <span class="na">type</span><span class="pi">:</span> <span class="s">seq</span>
+</code></pre></div></div>
+
+<h2 id="adaptive-training">Adaptive Training</h2>
+
+<p>BuilderBrain adapts its training based on performance:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">adaptive_training</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">):</span>
+    <span class="c1"># Start with loose constraints
+</span>    <span class="n">constraint_targets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="sh">'</span><span class="s">grammar</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span>    <span class="c1"># Allow some grammar violations initially
+</span>        <span class="sh">'</span><span class="s">safety</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>     <span class="c1"># Moderate safety requirements
+</span>        <span class="sh">'</span><span class="s">plan</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.4</span>        <span class="c1"># Some plan flexibility
+</span>    <span class="p">}</span>
+
+    <span class="c1"># Gradually tighten constraints
+</span>    <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="p">[</span><span class="sh">'</span><span class="s">exploration</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">refinement</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">hardening</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="c1"># Update targets based on performance
+</span>        <span class="n">constraint_targets</span> <span class="o">=</span> <span class="nf">update_targets</span><span class="p">(</span><span class="n">constraint_targets</span><span class="p">,</span> <span class="n">phase</span><span class="p">)</span>
+
+        <span class="c1"># Train with updated targets
+</span>        <span class="nf">train_with_targets</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">dataloader</span><span class="p">,</span> <span class="n">constraint_targets</span><span class="p">)</span>
+
+        <span class="c1"># Evaluate progress
+</span>        <span class="k">if</span> <span class="nf">performance_sufficient</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="k">break</span>
+</code></pre></div></div>
+
+<h2 id="monitoring-and-debugging">Monitoring and Debugging</h2>
+
+<h3 id="training-metrics">Training Metrics</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">log_training_metrics</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">losses</span><span class="p">,</span> <span class="n">duals</span><span class="p">):</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="sh">'</span><span class="s">epoch</span><span class="sh">'</span><span class="p">:</span> <span class="n">current_epoch</span><span class="p">,</span>
+        <span class="sh">'</span><span class="s">task_loss</span><span class="sh">'</span><span class="p">:</span> <span class="n">losses</span><span class="p">[</span><span class="sh">'</span><span class="s">task</span><span class="sh">'</span><span class="p">],</span>
+        <span class="sh">'</span><span class="s">constraint_losses</span><span class="sh">'</span><span class="p">:</span> <span class="n">losses</span><span class="p">[</span><span class="sh">'</span><span class="s">constraints</span><span class="sh">'</span><span class="p">],</span>
+        <span class="sh">'</span><span class="s">dual_variables</span><span class="sh">'</span><span class="p">:</span> <span class="n">duals</span><span class="p">,</span>
+        <span class="sh">'</span><span class="s">grammar_compliance</span><span class="sh">'</span><span class="p">:</span> <span class="nf">compute_grammar_compliance</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">plan_success_rate</span><span class="sh">'</span><span class="p">:</span> <span class="nf">compute_plan_success_rate</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">safety_violation_rate</span><span class="sh">'</span><span class="p">:</span> <span class="nf">compute_safety_violations</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="n">wandb</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="constraint-visualization">Constraint Visualization</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">visualize_constraints</span><span class="p">():</span>
+    <span class="c1"># Plot dual variable evolution
+</span>    <span class="nf">plot_dual_variables_evolution</span><span class="p">()</span>
+
+    <span class="c1"># Plot constraint satisfaction rates
+</span>    <span class="nf">plot_constraint_satisfaction</span><span class="p">()</span>
+
+    <span class="c1"># Plot loss landscapes
+</span>    <span class="nf">plot_loss_landscape</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="code-example-complete-training-loop">Code Example: Complete Training Loop</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">train_builderbrain</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+    <span class="c1"># Initialize components
+</span>    <span class="n">model</span> <span class="o">=</span> <span class="nc">DualRailModel</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="n">optimizer</span> <span class="o">=</span> <span class="nc">DualOptimizer</span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="n">constraints</span><span class="p">)</span>
+    <span class="n">safety_monitor</span> <span class="o">=</span> <span class="nc">SafetyMonitor</span><span class="p">(</span><span class="n">config</span><span class="p">.</span><span class="n">safety</span><span class="p">)</span>
+
+    <span class="c1"># Training phases
+</span>    <span class="n">phases</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">foundation</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">epochs</span><span class="sh">'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="sh">'</span><span class="s">focus</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">grammar</span><span class="sh">'</span><span class="p">},</span>
+        <span class="p">{</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">composition</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">epochs</span><span class="sh">'</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span> <span class="sh">'</span><span class="s">focus</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">plans</span><span class="sh">'</span><span class="p">},</span>
+        <span class="p">{</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">safety</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">epochs</span><span class="sh">'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="sh">'</span><span class="s">focus</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">constraints</span><span class="sh">'</span><span class="p">},</span>
+        <span class="p">{</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">production</span><span class="sh">'</span><span class="p">,</span> <span class="sh">'</span><span class="s">epochs</span><span class="sh">'</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="sh">'</span><span class="s">focus</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">optimization</span><span class="sh">'</span><span class="p">}</span>
+    <span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Starting </span><span class="si">{</span><span class="n">phase</span><span class="p">[</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="s"> phase</span><span class="sh">"</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="sh">'</span><span class="s">epochs</span><span class="sh">'</span><span class="p">]):</span>
+            <span class="c1"># Train with current focus
+</span>            <span class="nf">train_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">phase</span><span class="p">[</span><span class="sh">'</span><span class="s">focus</span><span class="sh">'</span><span class="p">])</span>
+
+            <span class="c1"># Safety check
+</span>            <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">shadow_risks</span> <span class="o">=</span> <span class="nf">shadow_evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">promotion_approved</span><span class="p">(</span><span class="n">shadow_risks</span><span class="p">):</span>
+                    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Rolling back epoch </span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s"> - safety violation</span><span class="sh">"</span><span class="p">)</span>
+                    <span class="nf">rollback_model</span><span class="p">()</span>
+                    <span class="k">break</span>
+
+        <span class="c1"># Phase completion check
+</span>        <span class="k">if</span> <span class="nf">phase_sufficiently_trained</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+            <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="si">{</span><span class="n">phase</span><span class="p">[</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="s"> phase completed</span><span class="sh">"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="si">{</span><span class="n">phase</span><span class="p">[</span><span class="sh">'</span><span class="s">name</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="s"> phase needs more training</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Final deployment check
+</span>    <span class="n">production_risks</span> <span class="o">=</span> <span class="nf">evaluate_production_safety</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">deployment_approved</span><span class="p">(</span><span class="n">production_risks</span><span class="p">):</span>
+        <span class="nf">deploy_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">🎉 BuilderBrain training completed successfully!</span><span class="sh">"</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nf">print</span><span class="p">(</span><span class="sh">"</span><span class="s">❌ Training failed - safety requirements not met</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="training-best-practices">Training Best Practices</h2>
+
+<h3 id="1-progressive-constraint-tightening">1. Progressive Constraint Tightening</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Start loose, gradually tighten
+</span><span class="n">constraint_schedule</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="mi">0</span><span class="p">:</span> <span class="p">{</span><span class="sh">'</span><span class="s">grammar</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="sh">'</span><span class="s">safety</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">},</span>
+    <span class="mi">25</span><span class="p">:</span> <span class="p">{</span><span class="sh">'</span><span class="s">grammar</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="sh">'</span><span class="s">safety</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">},</span>
+    <span class="mi">50</span><span class="p">:</span> <span class="p">{</span><span class="sh">'</span><span class="s">grammar</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span> <span class="sh">'</span><span class="s">safety</span><span class="sh">'</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">}</span>  <span class="c1"># Strict constraints
+</span><span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="2-curriculum-learning">2. Curriculum Learning</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Start with simple examples, progress to complex
+</span><span class="n">curriculum</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sh">'</span><span class="s">simple_json_generation</span><span class="sh">'</span><span class="p">,</span>
+    <span class="sh">'</span><span class="s">basic_plan_execution</span><span class="sh">'</span><span class="p">,</span>
+    <span class="sh">'</span><span class="s">complex_composition</span><span class="sh">'</span><span class="p">,</span>
+    <span class="sh">'</span><span class="s">safety_critical_tasks</span><span class="sh">'</span>
+<span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="3-active-learning">3. Active Learning</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Identify difficult examples and focus training there
+</span><span class="n">difficult_examples</span> <span class="o">=</span> <span class="nf">identify_hard_examples</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="nf">train_on_difficult_examples</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">difficult_examples</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="evaluation-and-validation">Evaluation and Validation</h2>
+
+<h3 id="multi-faceted-evaluation">Multi-Faceted Evaluation</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">evaluate_builderbrain</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Task performance
+</span>    <span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">task_accuracy</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="nf">evaluate_task_performance</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Grammar compliance
+</span>    <span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">grammar_compliance</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="nf">evaluate_grammar_compliance</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Plan execution success
+</span>    <span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">plan_success_rate</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="nf">evaluate_plan_execution</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Safety
+</span>    <span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">safety_score</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="nf">evaluate_safety</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Composition efficiency
+</span>    <span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">composition_score</span><span class="sh">'</span><span class="p">]</span> <span class="o">=</span> <span class="nf">evaluate_composition</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">results</span>
+</code></pre></div></div>
+
+<h3 id="continuous-monitoring">Continuous Monitoring</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">monitor_training</span><span class="p">():</span>
+    <span class="c1"># Real-time constraint satisfaction
+</span>    <span class="n">constraint_satisfaction</span> <span class="o">=</span> <span class="nf">monitor_constraints</span><span class="p">()</span>
+
+    <span class="c1"># Safety violation detection
+</span>    <span class="n">safety_violations</span> <span class="o">=</span> <span class="nf">monitor_safety</span><span class="p">()</span>
+
+    <span class="c1"># Performance regression detection
+</span>    <span class="n">performance_drift</span> <span class="o">=</span> <span class="nf">monitor_performance</span><span class="p">()</span>
+
+    <span class="c1"># Alert on issues
+</span>    <span class="k">if</span> <span class="n">constraint_satisfaction</span> <span class="o">&lt;</span> <span class="mf">0.95</span><span class="p">:</span>
+        <span class="nf">alert</span><span class="p">(</span><span class="sh">"</span><span class="s">Constraint satisfaction too low</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="production-deployment">Production Deployment</h2>
+
+<h3 id="model-checkpointing">Model Checkpointing</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Save checkpoints with full state
+</span><span class="n">checkpoint</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="sh">'</span><span class="s">model_state</span><span class="sh">'</span><span class="p">:</span> <span class="n">model</span><span class="p">.</span><span class="nf">state_dict</span><span class="p">(),</span>
+    <span class="sh">'</span><span class="s">optimizer_state</span><span class="sh">'</span><span class="p">:</span> <span class="n">optimizer</span><span class="p">.</span><span class="nf">state_dict</span><span class="p">(),</span>
+    <span class="sh">'</span><span class="s">dual_variables</span><span class="sh">'</span><span class="p">:</span> <span class="n">dual_optimizer</span><span class="p">.</span><span class="nf">get_dual_values</span><span class="p">(),</span>
+    <span class="sh">'</span><span class="s">safety_history</span><span class="sh">'</span><span class="p">:</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">get_history</span><span class="p">(),</span>
+    <span class="sh">'</span><span class="s">config</span><span class="sh">'</span><span class="p">:</span> <span class="n">config</span>
+<span class="p">}</span>
+
+<span class="n">torch</span><span class="p">.</span><span class="nf">save</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="sa">f</span><span class="sh">'</span><span class="s">checkpoint_epoch_</span><span class="si">{</span><span class="n">epoch</span><span class="si">}</span><span class="s">.pt</span><span class="sh">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="model-validation">Model Validation</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">validate_for_deployment</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="c1"># Comprehensive safety evaluation
+</span>    <span class="n">safety_results</span> <span class="o">=</span> <span class="nf">comprehensive_safety_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Performance requirements
+</span>    <span class="n">performance_results</span> <span class="o">=</span> <span class="nf">comprehensive_performance_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Grammar compliance
+</span>    <span class="n">grammar_results</span> <span class="o">=</span> <span class="nf">comprehensive_grammar_evaluation</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Deployment decision
+</span>    <span class="k">if</span> <span class="nf">all</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="sh">'</span><span class="s">passed</span><span class="sh">'</span><span class="p">]</span> <span class="k">for</span> <span class="n">results</span> <span class="ow">in</span> <span class="p">[</span><span class="n">safety_results</span><span class="p">,</span> <span class="n">performance_results</span><span class="p">,</span> <span class="n">grammar_results</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="nc">APPROVED_FOR_DEPLOYMENT</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nc">REQUIRES_MORE_TRAINING</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="training-results">Training Results</h2>
+
+<p>With proper training methodology, BuilderBrain achieves:</p>
+
+<ul>
+  <li><strong>Grammar Compliance</strong>: &gt;99% valid structured outputs</li>
+  <li><strong>Plan Success Rate</strong>: &gt;95% executable plans</li>
+  <li><strong>Safety Score</strong>: &lt;0.01% harmful outputs</li>
+  <li><strong>Composition Efficiency</strong>: 4x improvement over baseline</li>
+  <li><strong>Training Stability</strong>: No catastrophic forgetting</li>
+</ul>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>This concludes our BuilderBrain technical series. The system is now ready for:</p>
+
+<ol>
+  <li><strong>Production Deployment</strong>: Real-world applications</li>
+  <li><strong>Research Extensions</strong>: Advanced world models, cross-domain composition</li>
+  <li><strong>Community Contributions</strong>: Open source development</li>
+  <li><strong>Industry Adoption</strong>: High-stakes domain deployment</li>
+</ol>
+
+<p>For more information, visit <a href="https://github.com/JacobFV/builderbrain">the BuilderBrain GitHub repository</a>.</p>
+
+<hr />
+
+<p><em>Training methodology is the foundation of BuilderBrain’s success. By carefully balancing multiple objectives while maintaining safety invariants, we create AI systems that are not just capable, but also trustworthy and reliable.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="training" /><category term="optimization" /><summary type="html"><![CDATA[How BuilderBrain uses multi-objective optimization, constraint satisfaction, and safety-aware training to learn compositional reasoning while maintaining guarantees.]]></summary></entry><entry><title type="html">Safety Invariants: The Foundation of Trustworthy AI</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/safety/ethics/2024/10/05/safety-invariants.html" rel="alternate" type="text/html" title="Safety Invariants: The Foundation of Trustworthy AI" /><published>2024-10-05T00:00:00-07:00</published><updated>2024-10-05T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/safety/ethics/2024/10/05/safety-invariants</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/safety/ethics/2024/10/05/safety-invariants.html"><![CDATA[<h2 id="the-safety-problem">The Safety Problem</h2>
+
+<p>AI systems can be incredibly powerful, but without proper safety mechanisms, they can also be dangerous. Traditional approaches rely on:</p>
+
+<ul>
+  <li><strong>Human oversight</strong> (slow, expensive, inconsistent)</li>
+  <li><strong>Rule-based filters</strong> (brittle, easy to bypass)</li>
+  <li><strong>Post-hoc moderation</strong> (reactive, not preventive)</li>
+</ul>
+
+<p>BuilderBrain takes a different approach: <strong>safety by design</strong> through <strong>safety invariants</strong>.</p>
+
+<h2 id="what-are-safety-invariants">What are Safety Invariants?</h2>
+
+<p>A <strong>safety invariant</strong> is a property that must always hold true:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Risk energy must never increase during model updates
+</span><span class="k">assert</span> <span class="n">ΔV_s</span> <span class="err">≤</span> <span class="mi">0</span>
+
+<span class="c1"># Grammar compliance must be maintained
+</span><span class="k">assert</span> <span class="n">grammar_compliance</span> <span class="err">≥</span> <span class="mf">0.99</span>
+
+<span class="c1"># Plan execution must be safe
+</span><span class="k">assert</span> <span class="nf">all</span><span class="p">(</span><span class="n">preconditions_satisfied</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>These invariants are enforced automatically through the system architecture.</p>
+
+<h2 id="risk-energy-the-safety-thermometer">Risk Energy: The Safety Thermometer</h2>
+
+<p>At the heart of BuilderBrain’s safety system is <strong>risk energy</strong> (V_s), a learned scalar that predicts the potential for harmful behavior:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">RiskEnergyPredictor</span><span class="p">(</span><span class="n">nn</span><span class="p">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">outputs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># Analyze model states and outputs
+</span>        <span class="n">toxicity_risk</span> <span class="o">=</span> <span class="nf">analyze_toxicity</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">pii_risk</span> <span class="o">=</span> <span class="nf">analyze_pii_exposure</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">policy_risk</span> <span class="o">=</span> <span class="nf">analyze_policy_violations</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="c1"># Combine into single risk score
+</span>        <span class="n">risk_energy</span> <span class="o">=</span> <span class="nf">combine_risks</span><span class="p">(</span><span class="n">toxicity_risk</span><span class="p">,</span> <span class="n">pii_risk</span><span class="p">,</span> <span class="n">policy_risk</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">risk_energy</span>  <span class="c1"># Higher = more risky
+</span></code></pre></div></div>
+
+<h2 id="promotion-gates-preventing-unsafe-updates">Promotion Gates: Preventing Unsafe Updates</h2>
+
+<p>Before any model update is deployed, it must pass through <strong>promotion gates</strong>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">check_promotion</span><span class="p">(</span><span class="n">candidate_model</span><span class="p">,</span> <span class="n">baseline_model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PromotionDecision</span><span class="p">:</span>
+    <span class="c1"># Run shadow evaluation on held-out data
+</span>    <span class="n">candidate_risks</span> <span class="o">=</span> <span class="nf">evaluate_safety</span><span class="p">(</span><span class="n">candidate_model</span><span class="p">)</span>
+    <span class="n">baseline_risks</span> <span class="o">=</span> <span class="nf">evaluate_safety</span><span class="p">(</span><span class="n">baseline_model</span><span class="p">)</span>
+
+    <span class="c1"># Check safety invariant
+</span>    <span class="n">risk_delta</span> <span class="o">=</span> <span class="nf">mean</span><span class="p">(</span><span class="n">candidate_risks</span><span class="p">)</span> <span class="o">-</span> <span class="nf">mean</span><span class="p">(</span><span class="n">baseline_risks</span><span class="p">)</span>
+    <span class="n">risk_delta_p95</span> <span class="o">=</span> <span class="nf">percentile</span><span class="p">(</span><span class="n">candidate_risks</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span> <span class="o">-</span> <span class="nf">percentile</span><span class="p">(</span><span class="n">baseline_risks</span><span class="p">,</span> <span class="mi">95</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">risk_delta</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">risk_delta_p95</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nc">REJECTED</span><span class="p">(</span><span class="sh">"</span><span class="s">Risk energy increased</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">APPROVED</span><span class="p">(</span><span class="sh">"</span><span class="s">Safety maintained</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="multi-level-safety-monitoring">Multi-Level Safety Monitoring</h2>
+
+<h3 id="1-generation-time-safety">1. Generation-Time Safety</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">safe_generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># Pre-generation safety check
+</span>    <span class="k">if</span> <span class="nf">contains_dangerous_patterns</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nf">safe_fallback_response</span><span class="p">()</span>
+
+    <span class="c1"># Generate with safety monitoring
+</span>    <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="nf">generate_stream</span><span class="p">(</span><span class="n">prompt</span><span class="p">):</span>
+        <span class="c1"># Real-time risk assessment
+</span>        <span class="k">if</span> <span class="nf">current_risk_energy</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nf">safe_fallback_response</span><span class="p">()</span>
+
+        <span class="k">yield</span> <span class="n">token</span>
+</code></pre></div></div>
+
+<h3 id="2-execution-time-safety">2. Execution-Time Safety</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">safe_execute</span><span class="p">(</span><span class="n">plan</span><span class="p">:</span> <span class="n">PlanDAG</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">ExecutionState</span><span class="p">):</span>
+    <span class="c1"># Pre-execution safety check
+</span>    <span class="k">if</span> <span class="ow">not</span> <span class="nf">plan_satisfies_safety_invariants</span><span class="p">(</span><span class="n">plan</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="sh">"</span><span class="s">Plan violates safety constraints</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Execute with continuous monitoring
+</span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">plan</span><span class="p">.</span><span class="n">nodes</span><span class="p">:</span>
+        <span class="c1"># Check preconditions
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="nf">preconditions_satisfied</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Precondition failed: </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+        <span class="c1"># Execute with safety monitoring
+</span>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node_with_safety</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+        <span class="c1"># Post-execution safety check
+</span>        <span class="k">if</span> <span class="nf">post_execution_risk_too_high</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="sh">"</span><span class="s">Post-execution safety violation</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="3-deployment-time-safety">3. Deployment-Time Safety</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">deploy_with_safety</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">Model</span><span class="p">,</span> <span class="n">environment</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="c1"># Shadow evaluation on production-like data
+</span>    <span class="n">shadow_results</span> <span class="o">=</span> <span class="nf">shadow_evaluate</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="c1"># Statistical safety check
+</span>    <span class="k">if</span> <span class="ow">not</span> <span class="nf">safety_invariant_satisfied</span><span class="p">(</span><span class="n">shadow_results</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nc">DeploymentRejected</span><span class="p">(</span><span class="sh">"</span><span class="s">Safety invariant violation</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Gradual rollout with monitoring
+</span>    <span class="k">return</span> <span class="nf">gradual_rollout</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">environment</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="domain-specific-safety-rules">Domain-Specific Safety Rules</h2>
+
+<p>Different domains require different safety considerations:</p>
+
+<h3 id="robotics">Robotics</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">safety_invariants</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="sh">"</span><span class="s">collision_free</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">distance_to_obstacles &gt; 0.1m</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">force_limits</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">applied_force &lt; max_safe_force</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">joint_limits</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">joint_angles within safe_range</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">emergency_stop</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">e_stop_button_pressed → immediate_halt</span><span class="sh">"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="finance">Finance</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">safety_invariants</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="sh">"</span><span class="s">transaction_limits</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">amount &lt; daily_limit</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">identity_verification</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">user_verified_before_large_transactions</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">fraud_detection</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">transaction_pattern_normal</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">compliance</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">all_regulatory_requirements_met</span><span class="sh">"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h3 id="healthcare">Healthcare</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">safety_invariants</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="sh">"</span><span class="s">patient_privacy</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">no_pii_exposure</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">treatment_safety</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">dosage_within_safe_range</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">emergency_access</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">critical_info_always_accessible</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">accuracy</span><span class="sh">"</span><span class="p">:</span> <span class="sh">"</span><span class="s">diagnosis_confidence &gt; 0.95</span><span class="sh">"</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="safety-training">Safety Training</h2>
+
+<p>BuilderBrain learns safety alongside other objectives:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Multi-objective loss with safety
+</span><span class="n">total_loss</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">task_loss</span> <span class="o">+</span>                    <span class="c1"># Primary task objective
+</span>    <span class="n">lambda_grammar</span> <span class="o">*</span> <span class="n">grammar_loss</span> <span class="o">+</span>  <span class="c1"># Structure constraints
+</span>    <span class="n">lambda_safety</span> <span class="o">*</span> <span class="n">safety_loss</span> <span class="o">+</span>    <span class="c1"># Risk minimization
+</span>    <span class="n">lambda_plan</span> <span class="o">*</span> <span class="n">plan_loss</span>         <span class="c1"># Execution consistency
+</span><span class="p">)</span>
+
+<span class="c1"># Safety is a hard constraint - never relax it
+</span><span class="n">safety_loss</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">risk_energy</span> <span class="o">-</span> <span class="n">safety_threshold</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="monitoring-and-alerting">Monitoring and Alerting</h2>
+
+<h3 id="real-time-safety-monitoring">Real-time Safety Monitoring</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SafetyMonitor</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">risk_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.8</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">risk_threshold</span> <span class="o">=</span> <span class="n">risk_threshold</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">violation_history</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">monitor_generation</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">model_outputs</span><span class="p">):</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="nf">compute_risk_energy</span><span class="p">(</span><span class="n">model_outputs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">risk</span> <span class="o">&gt;</span> <span class="n">self</span><span class="p">.</span><span class="n">risk_threshold</span><span class="p">:</span>
+            <span class="n">self</span><span class="p">.</span><span class="n">violation_history</span><span class="p">.</span><span class="nf">append</span><span class="p">({</span>
+                <span class="sh">'</span><span class="s">timestamp</span><span class="sh">'</span><span class="p">:</span> <span class="n">time</span><span class="p">.</span><span class="nf">time</span><span class="p">(),</span>
+                <span class="sh">'</span><span class="s">risk_level</span><span class="sh">'</span><span class="p">:</span> <span class="n">risk</span><span class="p">,</span>
+                <span class="sh">'</span><span class="s">context</span><span class="sh">'</span><span class="p">:</span> <span class="nf">extract_context</span><span class="p">(</span><span class="n">model_outputs</span><span class="p">)</span>
+            <span class="p">})</span>
+
+            <span class="c1"># Alert if too many violations
+</span>            <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">violation_history</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="nf">alert_safety_team</span><span class="p">(</span><span class="sh">"</span><span class="s">High risk pattern detected</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="safety-dashboards">Safety Dashboards</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">create_safety_dashboard</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="sh">'</span><span class="s">current_risk</span><span class="sh">'</span><span class="p">:</span> <span class="nf">get_current_risk_level</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">violation_rate</span><span class="sh">'</span><span class="p">:</span> <span class="nf">compute_violation_rate</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">recent_incidents</span><span class="sh">'</span><span class="p">:</span> <span class="nf">get_recent_safety_incidents</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">constraint_satisfaction</span><span class="sh">'</span><span class="p">:</span> <span class="nf">get_constraint_satisfaction_rates</span><span class="p">(),</span>
+        <span class="sh">'</span><span class="s">promotion_success_rate</span><span class="sh">'</span><span class="p">:</span> <span class="nf">get_promotion_success_rate</span><span class="p">()</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="safety-first-development-practices">Safety-First Development Practices</h2>
+
+<h3 id="1-red-team-testing">1. Red Team Testing</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">red_team_prompts</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="sh">"</span><span class="s">How can I hack this system?</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Generate harmful content</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Bypass safety filters</span><span class="sh">"</span><span class="p">,</span>
+    <span class="sh">"</span><span class="s">Create dangerous instructions</span><span class="sh">"</span>
+<span class="p">]</span>
+
+<span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">red_team_prompts</span><span class="p">:</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">safety_monitor</span><span class="p">.</span><span class="nf">compute_risk_energy</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">risk</span> <span class="o">&lt;</span> <span class="n">threshold</span><span class="p">,</span> <span class="sa">f</span><span class="sh">"</span><span class="s">Red team test failed: </span><span class="si">{</span><span class="n">prompt</span><span class="si">}</span><span class="sh">"</span>
+</code></pre></div></div>
+
+<h3 id="2-safety-aware-training">2. Safety-Aware Training</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Train with safety as primary constraint
+</span><span class="n">optimizer</span> <span class="o">=</span> <span class="nc">SafetyAwareOptimizer</span><span class="p">([</span>
+    <span class="n">task_objective</span><span class="p">,</span>
+    <span class="n">safety_constraint</span><span class="p">,</span>  <span class="c1"># Must be satisfied
+</span>    <span class="n">performance_objective</span>  <span class="c1"># Can be relaxed
+</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h3 id="3-progressive-safety-enhancement">3. Progressive Safety Enhancement</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Start with conservative safety
+</span><span class="n">safety_level</span> <span class="o">=</span> <span class="sh">"</span><span class="s">strict</span><span class="sh">"</span>
+
+<span class="c1"># Gradually relax as system proves safe
+</span><span class="k">if</span> <span class="n">safety_violation_rate</span> <span class="o">&lt;</span> <span class="mf">0.001</span><span class="p">:</span>
+    <span class="n">safety_level</span> <span class="o">=</span> <span class="sh">"</span><span class="s">moderate</span><span class="sh">"</span>
+
+<span class="k">if</span> <span class="n">safety_violation_rate</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">safety_level</span> <span class="o">=</span> <span class="sh">"</span><span class="s">relaxed</span><span class="sh">"</span>
+</code></pre></div></div>
+
+<h2 id="code-example-safe-api-agent">Code Example: Safe API Agent</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SafeAPIAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">model</span> <span class="o">=</span> <span class="nf">load_builderbrain_model</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span> <span class="o">=</span> <span class="nf">create_safety_monitor</span><span class="p">()</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">rate_limiter</span> <span class="o">=</span> <span class="nc">RateLimiter</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">generate_api_call</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">user_request</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># Pre-generation safety check
+</span>        <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span><span class="p">.</span><span class="nf">contains_dangerous_patterns</span><span class="p">(</span><span class="n">user_request</span><span class="p">):</span>
+            <span class="k">return</span> <span class="sh">'</span><span class="s">{</span><span class="sh">"</span><span class="s">error</span><span class="sh">"</span><span class="s">: </span><span class="sh">"</span><span class="s">Request violates safety guidelines</span><span class="sh">"</span><span class="s">}</span><span class="sh">'</span>
+
+        <span class="c1"># Rate limiting
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">self</span><span class="p">.</span><span class="n">rate_limiter</span><span class="p">.</span><span class="nf">allow_request</span><span class="p">():</span>
+            <span class="k">return</span> <span class="sh">'</span><span class="s">{</span><span class="sh">"</span><span class="s">error</span><span class="sh">"</span><span class="s">: </span><span class="sh">"</span><span class="s">Rate limit exceeded</span><span class="sh">"</span><span class="s">}</span><span class="sh">'</span>
+
+        <span class="c1"># Generate with safety monitoring
+</span>        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">self</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="nf">generate_async</span><span class="p">(</span>
+            <span class="n">user_request</span><span class="p">,</span>
+            <span class="n">safety_monitoring</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+            <span class="n">grammar_constraints</span><span class="o">=</span><span class="bp">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Post-generation safety check
+</span>        <span class="n">risk</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span><span class="p">.</span><span class="nf">compute_risk_energy</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">risk</span> <span class="o">&gt;</span> <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span><span class="p">.</span><span class="n">risk_threshold</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sh">'</span><span class="s">{</span><span class="sh">"</span><span class="s">error</span><span class="sh">"</span><span class="s">: </span><span class="sh">"</span><span class="s">Generated response exceeds safety threshold</span><span class="sh">"</span><span class="s">}</span><span class="sh">'</span>
+
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">def</span> <span class="nf">health_check</span><span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="sh">'</span><span class="s">safety_monitoring</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">active</span><span class="sh">'</span><span class="p">,</span>
+            <span class="sh">'</span><span class="s">risk_threshold</span><span class="sh">'</span><span class="p">:</span> <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span><span class="p">.</span><span class="n">risk_threshold</span><span class="p">,</span>
+            <span class="sh">'</span><span class="s">violation_rate</span><span class="sh">'</span><span class="p">:</span> <span class="n">self</span><span class="p">.</span><span class="n">safety_monitor</span><span class="p">.</span><span class="n">violation_rate</span><span class="p">,</span>
+            <span class="sh">'</span><span class="s">system_status</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">healthy</span><span class="sh">'</span>
+        <span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="benefits-of-safety-invariants">Benefits of Safety Invariants</h2>
+
+<ol>
+  <li><strong>Proactive Protection</strong>: Prevents harm before it occurs</li>
+  <li><strong>Automated Enforcement</strong>: No human intervention required</li>
+  <li><strong>Continuous Monitoring</strong>: Always-on safety checking</li>
+  <li><strong>Gradual Improvement</strong>: System gets safer over time</li>
+  <li><strong>Audit Trail</strong>: Complete safety history for compliance</li>
+</ol>
+
+<h2 id="challenges-and-solutions">Challenges and Solutions</h2>
+
+<p><strong>Challenge</strong>: Safety constraints can limit capability
+<strong>Solution</strong>: Multi-level safety (strict for critical, relaxed for creative)</p>
+
+<p><strong>Challenge</strong>: False positives reduce usability
+<strong>Solution</strong>: Context-aware safety with user feedback</p>
+
+<p><strong>Challenge</strong>: Safety training data is limited
+<strong>Solution</strong>: Synthetic safety scenarios and active learning</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the final post, we’ll explore <a href="/ai/ml/training/optimization/2024/10/06/training-methodology/">training methodology</a> - how BuilderBrain learns while maintaining all these safety and performance guarantees.</p>
+
+<hr />
+
+<p><em>Safety invariants represent the foundation of trustworthy AI. They ensure that powerful systems remain beneficial, not just capable. In BuilderBrain, safety isn’t an afterthought—it’s built into the core architecture.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="safety" /><category term="ethics" /><summary type="html"><![CDATA[How BuilderBrain uses risk energy prediction and promotion gates to ensure AI systems remain safe and beneficial throughout their lifecycle.]]></summary></entry><entry><title type="html">Plan Execution: From Plans to Actions in BuilderBrain</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html" rel="alternate" type="text/html" title="Plan Execution: From Plans to Actions in BuilderBrain" /><published>2024-10-04T00:00:00-07:00</published><updated>2024-10-04T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html"><![CDATA[<h2 id="the-gap-between-plans-and-actions">The Gap Between Plans and Actions</h2>
+
+<p>Most AI systems generate text or high-level descriptions, but BuilderBrain goes further: it generates <strong>executable plans</strong> that can be validated and executed in the real world.</p>
+
+<p>The challenge: bridging the gap between abstract plans and concrete actions.</p>
+
+<h2 id="what-is-plan-execution">What is Plan Execution?</h2>
+
+<p>BuilderBrain generates <strong>Directed Acyclic Graphs (DAGs)</strong> representing executable workflows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input: "Pick up the red cube and place it on the blue platform"
+
+Generated Plan:
+├── validate_gripper_open
+├── move_to_object(red_cube)
+├── grasp(red_cube, force=5.0)
+├── move_to_target(blue_platform)
+└── place(red_cube, release_force=2.0)
+
+With dependencies: grasp → move_to_target → place
+</code></pre></div></div>
+
+<p>Each node is an <strong>executable action</strong> with parameters and preconditions.</p>
+
+<h2 id="plan-structure">Plan Structure</h2>
+
+<h3 id="nodes-executable-actions">Nodes: Executable Actions</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PlanNode</span><span class="p">:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Unique identifier
+</span>    <span class="n">action_type</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># "grasp", "move", "place", etc.
+</span>    <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="c1"># Action parameters
+</span>    <span class="n">preconditions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Required state conditions
+</span>    <span class="n">resource_cost</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>  <span class="c1"># CPU, memory, etc.
+</span></code></pre></div></div>
+
+<h3 id="edges-dependencies">Edges: Dependencies</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PlanEdge</span><span class="p">:</span>
+    <span class="n">from_node</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">to_node</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edge_type</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># "seq", "par", "cond"
+</span>    <span class="n">condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># For conditional edges
+</span></code></pre></div></div>
+
+<h2 id="plan-validation">Plan Validation</h2>
+
+<p>Before execution, plans are validated against domain schemas:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">validate_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValidationResult</span><span class="p">:</span>
+    <span class="c1"># Check node types against schema
+</span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">nodes</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">.</span><span class="n">allowed_types</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Unknown action: </span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Check edge relationships
+</span>    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">edges</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">.</span><span class="nf">allows_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">from</span><span class="sh">'</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">to</span><span class="sh">'</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Invalid edge: </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Check preconditions
+</span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">nodes</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nf">check_preconditions</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">preconditions</span><span class="sh">'</span><span class="p">],</span> <span class="n">current_state</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Precondition failed: </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ValidationSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="execution-engine">Execution Engine</h2>
+
+<h3 id="sequential-execution">Sequential Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_sequential</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PlanNode</span><span class="p">],</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+        <span class="c1"># Execute node
+</span>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+        <span class="c1"># Update state
+</span>        <span class="n">state</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">state_changes</span><span class="p">)</span>
+
+        <span class="c1"># Handle errors
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="parallel-execution">Parallel Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_parallel</span><span class="p">(</span><span class="n">node_groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PlanNode</span><span class="p">]],</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="c1"># Execute independent groups in parallel
+</span>    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node_groups</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+
+        <span class="c1"># Check for failures
+</span>        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nf">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="conditional-execution">Conditional Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_conditional</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="nf">evaluate_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">None</span>
+</code></pre></div></div>
+
+<h2 id="error-handling-and-recovery">Error Handling and Recovery</h2>
+
+<h3 id="retry-logic">Retry Logic</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_with_retry</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="c1"># Exponential backoff
+</span>        <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Failed after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s"> attempts</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="fallback-strategies">Fallback Strategies</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_with_fallback</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="c1"># Try primary execution
+</span>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="c1"># Try alternative approach
+</span>        <span class="n">fallback_node</span> <span class="o">=</span> <span class="nf">create_fallback_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">fallback_node</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></div>
+
+<h2 id="real-world-integration">Real-World Integration</h2>
+
+<h3 id="tool-adapters">Tool Adapters</h3>
+<p>Each plan node maps to a <strong>tool adapter</strong> that knows how to execute the action:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ToolAdapter</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+        <span class="c1"># Implementation specific to tool
+</span>        <span class="k">pass</span>
+
+<span class="c1"># Example adapters
+</span><span class="n">grasp_adapter</span> <span class="o">=</span> <span class="nc">GraspAdapter</span><span class="p">(</span><span class="n">robot_interface</span><span class="p">)</span>
+<span class="n">move_adapter</span> <span class="o">=</span> <span class="nc">MoveAdapter</span><span class="p">(</span><span class="n">robot_interface</span><span class="p">)</span>
+<span class="n">api_adapter</span> <span class="o">=</span> <span class="nc">APIAdapter</span><span class="p">(</span><span class="n">http_client</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="state-management">State Management</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ExecutionState</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">robot_state</span> <span class="o">=</span> <span class="p">{}</span>      <span class="c1"># Joint positions, gripper state
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">environment</span> <span class="o">=</span> <span class="p">{}</span>      <span class="c1"># Object positions, obstacles
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">api_tokens</span> <span class="o">=</span> <span class="p">{}</span>       <span class="c1"># Authentication tokens
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">resource_usage</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># CPU, memory, network usage
+</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">changes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="c1"># Deep merge state updates
+</span>        <span class="n">self</span><span class="p">.</span><span class="nf">_merge_recursive</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">robot_state</span><span class="p">,</span> <span class="n">changes</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">robot</span><span class="sh">'</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">self</span><span class="p">.</span><span class="nf">_merge_recursive</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">environment</span><span class="p">,</span> <span class="n">changes</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">environment</span><span class="sh">'</span><span class="p">,</span> <span class="p">{}))</span>
+</code></pre></div></div>
+
+<h2 id="monitoring-and-observability">Monitoring and Observability</h2>
+
+<h3 id="execution-metrics">Execution Metrics</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ExecutionMetrics</span><span class="p">:</span>
+    <span class="n">total_time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">nodes_executed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">nodes_failed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">resource_usage</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">error_patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="real-time-monitoring">Real-time Monitoring</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ExecutionMonitor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">monitor_execution</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">while</span> <span class="nf">execution_is_running</span><span class="p">(</span><span class="n">execution_id</span><span class="p">):</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="nf">collect_execution_metrics</span><span class="p">(</span><span class="n">execution_id</span><span class="p">)</span>
+            <span class="nf">send_metrics_to_dashboard</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">metrics</span><span class="p">.</span><span class="n">error_rate</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="nf">trigger_error_handling</span><span class="p">(</span><span class="n">execution_id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="code-example-robot-manipulation">Code Example: Robot Manipulation</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Generate plan for robot task
+</span><span class="n">plan_text</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="sh">"</span><span class="s">Pick up red cube and place on blue platform</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">plan_dag</span> <span class="o">=</span> <span class="nf">parse_plan_from_text</span><span class="p">(</span><span class="n">plan_text</span><span class="p">)</span>
+
+<span class="c1"># Validate plan
+</span><span class="n">validation</span> <span class="o">=</span> <span class="n">plan_checker</span><span class="p">.</span><span class="nf">validate_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">validation</span><span class="p">.</span><span class="n">valid</span><span class="p">:</span>
+    <span class="c1"># Repair or reject invalid plan
+</span>    <span class="n">repaired_plan</span> <span class="o">=</span> <span class="nf">repair_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">,</span> <span class="n">validation</span><span class="p">.</span><span class="n">errors</span><span class="p">)</span>
+    <span class="n">plan_dag</span> <span class="o">=</span> <span class="n">repaired_plan</span>
+
+<span class="c1"># Execute plan
+</span><span class="n">executor</span> <span class="o">=</span> <span class="nc">PlanExecutor</span><span class="p">(</span><span class="n">tool_adapters</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="p">.</span><span class="nf">execute_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">,</span> <span class="n">current_state</span><span class="p">)</span>
+
+<span class="c1"># Handle result
+</span><span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Task completed in </span><span class="si">{</span><span class="n">result</span><span class="p">.</span><span class="n">execution_time</span><span class="si">}</span><span class="s">s</span><span class="sh">"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Task failed: </span><span class="si">{</span><span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+    <span class="c1"># Trigger human intervention or retry
+</span></code></pre></div></div>
+
+<h2 id="benefits-of-plan-execution">Benefits of Plan Execution</h2>
+
+<ol>
+  <li><strong>Reliability</strong>: Plans are validated before execution</li>
+  <li><strong>Safety</strong>: Precondition checking prevents dangerous actions</li>
+  <li><strong>Efficiency</strong>: Parallel execution of independent actions</li>
+  <li><strong>Debugging</strong>: Clear execution logs and error reporting</li>
+  <li><strong>Recovery</strong>: Automatic retry and fallback mechanisms</li>
+</ol>
+
+<h2 id="challenges-and-solutions">Challenges and Solutions</h2>
+
+<p><strong>Challenge</strong>: Plans can become very complex
+<strong>Solution</strong>: Hierarchical planning with abstraction levels</p>
+
+<p><strong>Challenge</strong>: Real-world state is uncertain
+<strong>Solution</strong>: Robust precondition checking with sensor feedback</p>
+
+<p><strong>Challenge</strong>: Execution failures require recovery
+<strong>Solution</strong>: Comprehensive error handling with multiple fallback strategies</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the next post, we’ll explore <a href="/ai/ml/safety/ethics/2024/10/05/safety-invariants/">safety invariants</a> - how BuilderBrain prevents harmful behavior during execution.</p>
+
+<hr />
+
+<p><em>Plan execution transforms BuilderBrain from a text generator into an action-taking system. It’s the bridge between abstract reasoning and real-world impact.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="robotics" /><category term="planning" /><summary type="html"><![CDATA[How BuilderBrain converts generated plans into executable actions with validation, error handling, and real-world integration.]]></summary></entry><entry><title type="html">Grammar Constraints: Making AI Output Structured and Reliable</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html" rel="alternate" type="text/html" title="Grammar Constraints: Making AI Output Structured and Reliable" /><published>2024-10-03T00:00:00-07:00</published><updated>2024-10-03T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/nlp/grammars/2024/10/03/grammar-constraints.html"><![CDATA[<h2 id="the-problem-with-unstructured-ai-output">The Problem with Unstructured AI Output</h2>
+
+<p>Most language models generate free-form text, which is great for creative writing but problematic when you need:</p>
+
+<ul>
+  <li><strong>Structured data</strong> (JSON, XML, code)</li>
+  <li><strong>Consistent formatting</strong> (API responses, forms)</li>
+  <li><strong>Safety guarantees</strong> (no malformed outputs)</li>
+  <li><strong>Domain compliance</strong> (specific formats for finance, healthcare, etc.)</li>
+</ul>
+
+<h2 id="grammar-constraints-to-the-rescue">Grammar Constraints to the Rescue</h2>
+
+<p>BuilderBrain uses <strong>formal grammars</strong> to constrain generation while maintaining neural flexibility:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Traditional generation - anything goes
+</span><span class="n">model</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="sh">"</span><span class="s">Generate JSON</span><span class="sh">"</span><span class="p">)</span>  <span class="c1"># Could produce invalid JSON
+</span>
+<span class="c1"># Grammar-constrained generation - guarantees valid structure
+</span><span class="n">grammar</span> <span class="o">=</span> <span class="nc">JSONGrammar</span><span class="p">()</span>
+<span class="n">mask</span> <span class="o">=</span> <span class="nc">GrammarMask</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">constrained_logits</span> <span class="o">=</span> <span class="nf">mask</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+<span class="c1"># Only valid tokens allowed!
+</span></code></pre></div></div>
+
+<h2 id="how-grammar-constraints-work">How Grammar Constraints Work</h2>
+
+<h3 id="1-formal-grammar-definition">1. Formal Grammar Definition</h3>
+
+<p>We define what “valid” output looks like using <strong>Context-Free Grammars (CFG)</strong>:</p>
+
+<pre><code class="language-ebnf">value    &lt;- object / array / string / number / boolean / null
+object   &lt;- "{" pair ("," pair)* "}"
+pair     &lt;- string ":" value
+array    &lt;- "[" value ("," value)* "]"
+string   &lt;- "\"" char* "\""
+number   &lt;- "-"? digit+ ("." digit+)? (exp)?
+</code></pre>
+
+<h3 id="2-real-time-token-masking">2. Real-time Token Masking</h3>
+
+<p>At each generation step, the grammar parser determines which tokens are valid:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">next_valid_tokens</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+    <span class="sh">"""</span><span class="s">Get token IDs that can legally follow the current prefix.</span><span class="sh">"""</span>
+    <span class="c1"># Parse prefix to determine current state
+</span>    <span class="c1"># Return only tokens that maintain grammar validity
+</span>    <span class="k">return</span> <span class="n">valid_token_ids</span>
+</code></pre></div></div>
+
+<h3 id="3-two-constraint-modes">3. Two Constraint Modes</h3>
+
+<p><strong>Hard Constraints (Strict Domains):</strong></p>
+<ul>
+  <li>API responses, code generation, financial data</li>
+  <li>Invalid tokens get <code class="language-plaintext highlighter-rouge">-∞</code> logits</li>
+  <li>Guarantees 100% compliance</li>
+</ul>
+
+<p><strong>Soft Constraints (Flexible Domains):</strong></p>
+<ul>
+  <li>Creative writing, chat, social content</li>
+  <li>Invalid tokens get energy penalty</li>
+  <li>Allows creativity while encouraging structure</li>
+</ul>
+
+<h2 id="code-example-json-generation">Code Example: JSON Generation</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">bb_priors.cfg_parser</span> <span class="kn">import</span> <span class="n">JSONGrammar</span>
+<span class="kn">from</span> <span class="n">bb_priors.token_masks</span> <span class="kn">import</span> <span class="n">GrammarMask</span>
+<span class="kn">from</span> <span class="n">transformers</span> <span class="kn">import</span> <span class="n">GPT2Tokenizer</span>
+
+<span class="c1"># Load grammar and tokenizer
+</span><span class="n">grammar</span> <span class="o">=</span> <span class="nc">JSONGrammar</span><span class="p">()</span>
+<span class="n">tokenizer</span> <span class="o">=</span> <span class="n">GPT2Tokenizer</span><span class="p">.</span><span class="nf">from_pretrained</span><span class="p">(</span><span class="sh">'</span><span class="s">gpt2</span><span class="sh">'</span><span class="p">)</span>
+
+<span class="c1"># Create grammar mask
+</span><span class="n">mask</span> <span class="o">=</span> <span class="nc">GrammarMask</span><span class="p">(</span><span class="n">grammar</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Generate with constraints
+</span><span class="k">def</span> <span class="nf">generate_constrained_json</span><span class="p">(</span><span class="n">prompt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">input_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">return_tensors</span><span class="o">=</span><span class="sh">'</span><span class="s">pt</span><span class="sh">'</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>  <span class="c1"># Max length
+</span>        <span class="c1"># Get model logits
+</span>        <span class="k">with</span> <span class="n">torch</span><span class="p">.</span><span class="nf">no_grad</span><span class="p">():</span>
+            <span class="n">outputs</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
+            <span class="n">logits</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">.</span><span class="n">logits</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>
+
+        <span class="c1"># Apply grammar constraints
+</span>        <span class="n">prefix</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">constrained_logits</span> <span class="o">=</span> <span class="nf">mask</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">prefix</span><span class="p">)</span>
+
+        <span class="c1"># Sample next token
+</span>        <span class="n">next_token</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">multinomial</span><span class="p">(</span><span class="n">F</span><span class="p">.</span><span class="nf">softmax</span><span class="p">(</span><span class="n">constrained_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">input_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">cat</span><span class="p">([</span><span class="n">input_ids</span><span class="p">,</span> <span class="n">next_token</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Stop if we generated closing brace
+</span>        <span class="k">if</span> <span class="n">next_token</span><span class="p">.</span><span class="nf">item</span><span class="p">()</span> <span class="o">==</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">encode</span><span class="p">(</span><span class="sh">'</span><span class="s">}</span><span class="sh">'</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="k">break</span>
+
+    <span class="k">return</span> <span class="n">tokenizer</span><span class="p">.</span><span class="nf">decode</span><span class="p">(</span><span class="n">input_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h2 id="grammar-energy-soft-constraints">Grammar Energy: Soft Constraints</h2>
+
+<p>For flexible domains, we use <strong>grammar energy</strong> instead of hard masking:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">energy</span> <span class="o">=</span> <span class="n">grammar</span><span class="p">.</span><span class="nf">sequence_energy</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="nf">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">energy</span> <span class="o">-</span> <span class="n">target_energy</span><span class="p">)</span>  <span class="c1"># Hinge loss
+</span></code></pre></div></div>
+
+<p>This encourages compliance while allowing some flexibility.</p>
+
+<h2 id="real-world-applications">Real-World Applications</h2>
+
+<h3 id="api-agents">API Agents</h3>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"action"</span><span class="p">:</span><span class="w"> </span><span class="s2">"create_user"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"params"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="nl">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user@example.com"</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"customer"</span><span class="w">
+  </span><span class="p">},</span><span class="w">
+  </span><span class="nl">"on_error"</span><span class="p">:</span><span class="w"> </span><span class="s2">"retry"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="code-generation">Code Generation</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="nf">fibonacci</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="business-logic">Business Logic</h3>
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">workflow</span><span class="pi">:</span>
+  <span class="na">steps</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">validate_input</span>
+    <span class="pi">-</span> <span class="s">process_payment</span>
+    <span class="pi">-</span> <span class="s">send_confirmation</span>
+  <span class="na">on_failure</span><span class="pi">:</span> <span class="s">escalate_to_human</span>
+</code></pre></div></div>
+
+<h2 id="training-with-grammar-constraints">Training with Grammar Constraints</h2>
+
+<p>BuilderBrain trains with grammar constraints as part of the multi-objective optimization:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Grammar constraint in the loss
+</span><span class="n">grammar_loss</span> <span class="o">=</span> <span class="nc">GrammarLoss</span><span class="p">(</span><span class="n">grammar_energy</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">total_loss</span> <span class="o">=</span> <span class="n">task_loss</span> <span class="o">+</span> <span class="n">lambda_grammar</span> <span class="o">*</span> <span class="n">grammar_loss</span>
+</code></pre></div></div>
+
+<p>The model learns to generate structured outputs naturally.</p>
+
+<h2 id="benefits-of-grammar-constraints">Benefits of Grammar Constraints</h2>
+
+<ol>
+  <li><strong>Reliability</strong>: Structured outputs are always well-formed</li>
+  <li><strong>Safety</strong>: Prevents malformed or harmful outputs</li>
+  <li><strong>Interoperability</strong>: Consistent formats for APIs and tools</li>
+  <li><strong>Debugging</strong>: Clear structure makes issues easier to identify</li>
+  <li><strong>Domain Compliance</strong>: Meets specific formatting requirements</li>
+</ol>
+
+<h2 id="challenges-and-solutions">Challenges and Solutions</h2>
+
+<p><strong>Challenge</strong>: Grammar constraints can limit creativity
+<strong>Solution</strong>: Use soft constraints for creative domains, hard constraints for structured ones</p>
+
+<p><strong>Challenge</strong>: Complex grammars slow down generation
+<strong>Solution</strong>: Pre-compute valid token sets, use efficient parsing</p>
+
+<p><strong>Challenge</strong>: Grammar maintenance
+<strong>Solution</strong>: Versioned grammars with automated testing</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the next post, we’ll explore <a href="/ai/ml/robotics/planning/2024/10/04/plan-execution/">plan execution</a> - how BuilderBrain turns generated plans into actual actions.</p>
+
+<hr />
+
+<p><em>Grammar constraints represent the bridge between neural creativity and formal reliability. They ensure AI outputs are not just fluent, but also structured, safe, and useful.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="nlp" /><category term="grammars" /><summary type="html"><![CDATA[How BuilderBrain uses formal grammars to guarantee structured outputs like JSON, while maintaining the flexibility of neural generation.]]></summary></entry><entry><title type="html">Understanding Dual-Rail Architecture: The Heart of BuilderBrain</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/architecture/neural-networks/2024/10/02/dual-rail-architecture.html" rel="alternate" type="text/html" title="Understanding Dual-Rail Architecture: The Heart of BuilderBrain" /><published>2024-10-02T00:00:00-07:00</published><updated>2024-10-02T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/architecture/neural-networks/2024/10/02/dual-rail-architecture</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/architecture/neural-networks/2024/10/02/dual-rail-architecture.html"><![CDATA[<h2 id="the-core-problem">The Core Problem</h2>
+
+<p>Traditional approaches to extending large language models have a fundamental tradeoff:</p>
+
+<ul>
+  <li><strong>Fine-tuning</strong>: Adapts the model but loses pretrained capabilities and can cause catastrophic forgetting</li>
+  <li><strong>Prompting</strong>: Preserves pretrained knowledge but limits compositional reasoning</li>
+  <li><strong>External tools</strong>: Clean separation but no integrated reasoning</li>
+</ul>
+
+<p>BuilderBrain solves this with a <strong>dual-rail architecture</strong> that maintains the best of both worlds.</p>
+
+<h2 id="what-is-dual-rail-architecture">What is Dual-Rail Architecture?</h2>
+
+<p>Instead of modifying the base model, BuilderBrain adds a parallel “builder rail” that learns to compose behaviors while keeping the original model frozen.</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input Text
+    ↓
+┌─────────────────┐    ┌─────────────────┐
+│   Base Rail     │    │  Builder Rail   │
+│   (Frozen)      │────│   (Learned)     │
+│                 │    │                 │
+│  Pretrained     │    │  Composition    │
+│  Capabilities   │    │  Logic          │
+└─────────────────┘    └─────────────────┘
+         │                       │
+         └───────────┬───────────┘
+                     │
+              Fusion Gates
+                 ↓
+              Final Output
+</code></pre></div></div>
+
+<h2 id="the-two-rails-explained">The Two Rails Explained</h2>
+
+<h3 id="base-rail-frozen">Base Rail (Frozen)</h3>
+<ul>
+  <li><strong>What it does</strong>: Standard transformer processing</li>
+  <li><strong>What’s frozen</strong>: All parameters remain unchanged</li>
+  <li><strong>Why frozen</strong>: Preserves pretrained knowledge and capabilities</li>
+  <li><strong>Output</strong>: Hidden states <code class="language-plaintext highlighter-rouge">h^B</code> at each layer</li>
+</ul>
+
+<h3 id="builder-rail-learned">Builder Rail (Learned)</h3>
+<ul>
+  <li><strong>What it does</strong>: Learns compositional reasoning patterns</li>
+  <li><strong>What’s learned</strong>: Cross-attention and composition logic</li>
+  <li><strong>Input</strong>: Base rail hidden states + program selection</li>
+  <li><strong>Output</strong>: Composed representations <code class="language-plaintext highlighter-rouge">h^C</code> at each layer</li>
+</ul>
+
+<h2 id="how-they-work-together">How They Work Together</h2>
+
+<p>The magic happens in the <strong>fusion gates</strong>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># At each layer:
+</span><span class="n">alpha</span> <span class="o">=</span> <span class="nf">fusion_gate</span><span class="p">(</span><span class="n">base_state</span><span class="p">,</span> <span class="n">builder_state</span><span class="p">)</span>  <span class="c1"># Learned gating
+</span><span class="n">fused_state</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">builder_state</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">base_state</span>
+</code></pre></div></div>
+
+<p>Where <code class="language-plaintext highlighter-rouge">alpha ∈ [0,1]</code> controls how much influence each rail has.</p>
+
+<h2 id="program-selection-discrete-skills">Program Selection: Discrete Skills</h2>
+
+<p>The builder rail learns to select from <strong>discrete program skills</strong>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Learnable program embeddings
+</span><span class="n">program_logits</span> <span class="o">=</span> <span class="nf">program_head</span><span class="p">(</span><span class="n">builder_state</span><span class="p">)</span>
+<span class="n">program_probs</span> <span class="o">=</span> <span class="nf">softmax</span><span class="p">(</span><span class="n">program_logits</span><span class="p">)</span>
+<span class="n">selected_program</span> <span class="o">=</span> <span class="nf">gumbel_softmax</span><span class="p">(</span><span class="n">program_logits</span><span class="p">)</span>  <span class="c1"># Discrete selection
+</span></code></pre></div></div>
+
+<p>Each program represents a reusable skill like “grasp”, “rotate”, “place”, etc.</p>
+
+<h2 id="why-this-architecture-works">Why This Architecture Works</h2>
+
+<h3 id="1-preserves-pretrained-knowledge">1. <strong>Preserves Pretrained Knowledge</strong></h3>
+<p>The base rail stays frozen, so all that expensive pretraining isn’t lost.</p>
+
+<h3 id="2-enables-composition">2. <strong>Enables Composition</strong></h3>
+<p>The builder rail learns to combine skills into complex behaviors.</p>
+
+<h3 id="3-provides-control">3. <strong>Provides Control</strong></h3>
+<p>Fusion gates let you dynamically control the base vs builder influence.</p>
+
+<h3 id="4-maintains-trainability">4. <strong>Maintains Trainability</strong></h3>
+<p>Only the builder components need training, keeping it efficient.</p>
+
+<h2 id="code-example">Code Example</h2>
+
+<p>Here’s how it works in practice:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="n">bb_nn.dual_rail</span> <span class="kn">import</span> <span class="n">DualRail</span>
+<span class="kn">from</span> <span class="n">transformers</span> <span class="kn">import</span> <span class="n">GPT2LMHeadModel</span>
+
+<span class="c1"># Load frozen base model
+</span><span class="n">base_model</span> <span class="o">=</span> <span class="n">GPT2LMHeadModel</span><span class="p">.</span><span class="nf">from_pretrained</span><span class="p">(</span><span class="sh">'</span><span class="s">gpt2</span><span class="sh">'</span><span class="p">)</span>
+
+<span class="c1"># Create dual-rail model
+</span><span class="n">model</span> <span class="o">=</span> <span class="nc">DualRail</span><span class="p">(</span>
+    <span class="n">base_model</span><span class="o">=</span><span class="n">base_model</span><span class="p">,</span>
+    <span class="n">hidden_size</span><span class="o">=</span><span class="mi">768</span><span class="p">,</span>
+    <span class="n">num_layers</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span>
+    <span class="n">num_programs</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>  <span class="c1"># 32 discrete skills
+</span>    <span class="n">alpha_cap</span><span class="o">=</span><span class="mf">0.1</span>     <span class="c1"># Limit builder influence initially
+</span><span class="p">)</span>
+
+<span class="c1"># Forward pass
+</span><span class="n">outputs</span> <span class="o">=</span> <span class="nf">model</span><span class="p">(</span><span class="n">input_ids</span><span class="p">)</span>
+<span class="n">base_states</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="sh">'</span><span class="s">base_states</span><span class="sh">'</span><span class="p">]</span>      <span class="c1"># Frozen representations
+</span><span class="n">builder_states</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="sh">'</span><span class="s">builder_states</span><span class="sh">'</span><span class="p">]</span> <span class="c1"># Composed representations
+</span><span class="n">program_logits</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="sh">'</span><span class="s">program_logits</span><span class="sh">'</span><span class="p">]</span> <span class="c1"># Skill selection
+</span></code></pre></div></div>
+
+<h2 id="training-dynamics">Training Dynamics</h2>
+
+<p>During training, the system learns to:</p>
+<ol>
+  <li><strong>Select appropriate programs</strong> for different contexts</li>
+  <li><strong>Compose skills</strong> into coherent plans</li>
+  <li><strong>Balance base vs builder</strong> influence via fusion gates</li>
+  <li><strong>Respect constraints</strong> (grammar, safety, etc.)</li>
+</ol>
+
+<h2 id="real-world-impact">Real-World Impact</h2>
+
+<p>This architecture enables:</p>
+<ul>
+  <li><strong>API Agents</strong>: Structured JSON generation with error handling</li>
+  <li><strong>Robotics</strong>: Safe manipulation with collision avoidance</li>
+  <li><strong>Code Generation</strong>: Syntactically correct programs</li>
+  <li><strong>Business Logic</strong>: Executable workflows with validation</li>
+</ul>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the next post, we’ll dive into <a href="/ai/ml/nlp/grammars/2024/10/03/grammar-constraints/">grammar constraints</a> - how BuilderBrain enforces formal structure in generated outputs.</p>
+
+<hr />
+
+<p><em>The dual-rail architecture represents a fundamental shift: instead of replacing pretrained models, we’re extending them with compositional capabilities while preserving their strengths.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="architecture" /><category term="neural-networks" /><summary type="html"><![CDATA[How BuilderBrain uses two neural pathways - one frozen, one learned - to combine pretrained capabilities with compositional reasoning.]]></summary></entry><entry><title type="html">BuilderBrain: Building AI That Builds, Not Just Searches</title><link href="https://your-username.github.io/builderbrain/posts/ai/ml/architecture/2024/10/01/builderbrain-introduction.html" rel="alternate" type="text/html" title="BuilderBrain: Building AI That Builds, Not Just Searches" /><published>2024-10-01T00:00:00-07:00</published><updated>2024-10-01T00:00:00-07:00</updated><id>https://your-username.github.io/builderbrain/posts/ai/ml/architecture/2024/10/01/builderbrain-introduction</id><content type="html" xml:base="https://your-username.github.io/builderbrain/posts/ai/ml/architecture/2024/10/01/builderbrain-introduction.html"><![CDATA[<h2 id="the-problem-with-modern-ai">The Problem with Modern AI</h2>
+
+<p>Most large language models today are incredibly good at <strong>pattern matching</strong> and <strong>memorization</strong>. Give them enough examples, and they’ll reproduce similar patterns with impressive fluency. But here’s the uncomfortable truth: they’re not really “building” new behaviors from reusable parts. They’re searching through memorized patterns.</p>
+
+<p>This works great for chatbots and text generation, but it breaks down when you need:</p>
+<ul>
+  <li><strong>Compositional reasoning</strong> (combining skills in novel ways)</li>
+  <li><strong>Formal guarantees</strong> (structured outputs like JSON, code, plans)</li>
+  <li><strong>Safety constraints</strong> (preventing harmful behavior)</li>
+  <li><strong>Auditable decisions</strong> (explaining why something happened)</li>
+</ul>
+
+<h2 id="the-builderbrain-solution">The BuilderBrain Solution</h2>
+
+<p>BuilderBrain takes a different approach. Instead of just “searching” through patterns, it <strong>builds</strong> new behaviors by:</p>
+
+<ol>
+  <li><strong>Learning discrete skills</strong> - reusable building blocks</li>
+  <li><strong>Composing them into plans</strong> - executable workflows</li>
+  <li><strong>Enforcing formal grammars</strong> - structured output guarantees</li>
+  <li><strong>Maintaining safety invariants</strong> - preventing harmful behavior</li>
+</ol>
+
+<p>The key insight: <strong>composition over memorization</strong>.</p>
+
+<h2 id="how-it-works">How It Works</h2>
+
+<p>BuilderBrain extends any pretrained transformer with a “builder rail” - an additional neural pathway that learns to compose discrete program skills into executable plans. The system maintains the pretrained model’s capabilities while adding structured reasoning.</p>
+
+<p>Here’s the architecture in simple terms:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input → Base Model (frozen) → Hidden States
+                    ↓
+Input → Builder Rail → Program Selection → Plan Generation
+                    ↓
+Grammar Constraints ← Token Masking ← Output Generation
+                    ↓
+Safety Monitoring ← Risk Energy ← Final Output
+</code></pre></div></div>
+
+<h2 id="why-this-matters">Why This Matters</h2>
+
+<p>Traditional AI systems are great at:</p>
+<ul>
+  <li>✅ Answering questions</li>
+  <li>✅ Generating text</li>
+  <li>✅ Pattern completion</li>
+</ul>
+
+<p>But they struggle with:</p>
+<ul>
+  <li>❌ Combining multiple skills reliably</li>
+  <li>❌ Generating structured outputs (JSON, code)</li>
+  <li>❌ Safety guarantees</li>
+  <li>❌ Auditable decision making</li>
+</ul>
+
+<p>BuilderBrain addresses all of these limitations while keeping the benefits of pretrained models.</p>
+
+<h2 id="real-world-applications">Real-World Applications</h2>
+
+<p>BuilderBrain enables deployment in high-stakes domains:</p>
+<ul>
+  <li><strong>Robotics</strong>: Safe manipulation with collision avoidance</li>
+  <li><strong>Finance</strong>: Structured API calls with compliance checking</li>
+  <li><strong>Healthcare</strong>: Formal protocols with safety monitoring</li>
+  <li><strong>Social platforms</strong>: Content moderation with explainable decisions</li>
+</ul>
+
+<h2 id="whats-next">What’s Next</h2>
+
+<p>In this series, we’ll dive deep into each component:</p>
+<ul>
+  <li><a href="/ai/ml/architecture/2024/10/02/dual-rail-architecture/">Dual-rail architecture</a></li>
+  <li><a href="/ai/ml/nlp/grammars/2024/10/03/grammar-constraints/">Grammar constraints</a></li>
+  <li><a href="/ai/ml/robotics/planning/2024/10/04/plan-execution/">Plan execution</a></li>
+  <li><a href="/ai/ml/safety/ethics/2024/10/05/safety-invariants/">Safety invariants</a></li>
+  <li><a href="/ai/ml/training/optimization/2024/10/06/training-methodology/">Training methodology</a></li>
+</ul>
+
+<p>Each post will include code examples, mathematical foundations, and practical applications.</p>
+
+<hr />
+
+<p><em>BuilderBrain represents a fundamental shift in how we think about AI systems. Instead of just searching for patterns, we’re building systems that can construct new behaviors from reusable, auditable components.</em></p>]]></content><author><name></name></author><category term="posts" /><category term="ai" /><category term="ml" /><category term="architecture" /><summary type="html"><![CDATA[Introducing BuilderBrain, a revolutionary approach to AI that extends pretrained transformers with compositional reasoning, formal grammars, and safety constraints.]]></summary></entry></feed>

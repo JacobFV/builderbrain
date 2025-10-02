@@ -1,0 +1,102 @@
+# Welcome to Jekyll!
+#
+# This config file is meant for settings that affect your whole blog, values
+# which you are expected to set up once and rarely edit after that. If you find
+# yourself editing this file very often, consider using Jekyll's data files
+# feature for the data you need to update frequently.
+#
+# For technical reasons, this file is *NOT* reloaded automatically when you use
+# 'bundle exec jekyll serve'. If you change this file, please restart the server process.
+#
+# If you need help with YAML syntax, here are some quick references for you:
+# https://learn-the-web.algonquindesign.ca/topics/markdown-yaml-cheat-sheet/#yaml
+# https://learnxinyminutes.com/docs/yaml/
+#
+# Site settings
+# These are used to personalize your new site. If you look in the HTML files,
+# you will see them accessed via {{ site.title }}, {{ site.email }}, and so on.
+# You can create any custom variable you would like, and they will be accessible
+# in the templates via {{ site.myvariable }}.
+
+title: BuilderBrain - Dual-Rail Compositional AI
+email: jacobvaldez@example.com
+description: >- # this means to ignore newlines until "baseurl:"
+  A revolutionary approach to AI that extends pretrained transformers with compositional reasoning,
+  formal grammars, and safety constraints. BuilderBrain builds, doesn't just search.
+baseurl: "/builderbrain" # the subpath of your site, e.g. /blog
+url: "https://jacobvaldez.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+twitter_username: jacobvaldez
+github_username:  jacobvaldez
+
+# Build settings
+theme: minima
+plugins:
+  - jekyll-feed
+
+# A list of the pages to display in the navigation bar
+header_pages:
+  - posts/_posts/2024-10-01-builderbrain-introduction.md
+  - posts/_posts/2024-10-02-dual-rail-architecture.md
+  - posts/_posts/2024-10-03-grammar-constraints.md
+  - posts/_posts/2024-10-04-plan-execution.md
+  - posts/_posts/2024-10-05-safety-invariants.md
+  - posts/_posts/2024-10-06-training-methodology.md
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /:categories/:year/:month/:day/:title:output_ext
+
+# Permalinks
+permalink: /:categories/:year/:month/:day/:title/
+
+# Exclude from processing.
+# The following items will not be processed, by default.
+# Any item listed under the `exclude:` key here will be automatically added to
+# the internal "default list".
+#
+# Excluded items can be processed by explicitly listing the directories or
+# their served files in the `include:` list.
+#
+exclude:
+  - .sass-cache/
+  - .jekyll-cache/
+  - gemfiles/
+  - Gemfile
+  - Gemfile.lock
+  - node_modules/
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - venv/
+  - venv-uv/
+  - bb_core/
+  - bb_losses/
+  - bb_nn/
+  - bb_priors/
+  - bb_runtime/
+  - bb_train/
+  - builderbrain_dashboard/
+  - configs/
+  - demo_dashboard.py
+  - demo_huggingface.py
+  - docs/
+  - exports/
+  - huggingface_pipeline/
+  - main.py
+  - benchmark.py
+  - debug_rank.py
+  - debug_rank2.py
+  - pyproject.toml
+  - uv.lock
+  - .git/
+  - .pytest_cache/
+  - BUILDERBRAIN_FINAL_REPORT.md
+  - README.md
+  - README_DASHBOARD.md
+  - README_HUGGINGFACE.md
+  - README_JEKYLL.md
+  - training_history_tiny.json
+  - builderbrain_benchmarks.json

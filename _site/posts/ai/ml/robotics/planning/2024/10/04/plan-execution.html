@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Plan Execution: From Plans to Actions in BuilderBrain | BuilderBrain - Dual-Rail Compositional AI</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Plan Execution: From Plans to Actions in BuilderBrain" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="How BuilderBrain converts generated plans into executable actions with validation, error handling, and real-world integration." />
+<meta property="og:description" content="How BuilderBrain converts generated plans into executable actions with validation, error handling, and real-world integration." />
+<link rel="canonical" href="https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html" />
+<meta property="og:url" content="https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html" />
+<meta property="og:site_name" content="BuilderBrain - Dual-Rail Compositional AI" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2024-10-04T00:00:00-07:00" />
+<meta name="twitter:card" content="summary" />
+<meta property="twitter:title" content="Plan Execution: From Plans to Actions in BuilderBrain" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","dateModified":"2024-10-04T00:00:00-07:00","datePublished":"2024-10-04T00:00:00-07:00","description":"How BuilderBrain converts generated plans into executable actions with validation, error handling, and real-world integration.","headline":"Plan Execution: From Plans to Actions in BuilderBrain","mainEntityOfPage":{"@type":"WebPage","@id":"https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html"},"url":"https://your-username.github.io/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/builderbrain/assets/main.css"><link type="application/atom+xml" rel="alternate" href="https://your-username.github.io/builderbrain/feed.xml" title="BuilderBrain - Dual-Rail Compositional AI" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/builderbrain/">BuilderBrain - Dual-Rail Compositional AI</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Plan Execution: From Plans to Actions in BuilderBrain</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2024-10-04T00:00:00-07:00" itemprop="datePublished">Oct 4, 2024
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <h2 id="the-gap-between-plans-and-actions">The Gap Between Plans and Actions</h2>
+
+<p>Most AI systems generate text or high-level descriptions, but BuilderBrain goes further: it generates <strong>executable plans</strong> that can be validated and executed in the real world.</p>
+
+<p>The challenge: bridging the gap between abstract plans and concrete actions.</p>
+
+<h2 id="what-is-plan-execution">What is Plan Execution?</h2>
+
+<p>BuilderBrain generates <strong>Directed Acyclic Graphs (DAGs)</strong> representing executable workflows:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Input: "Pick up the red cube and place it on the blue platform"
+
+Generated Plan:
+├── validate_gripper_open
+├── move_to_object(red_cube)
+├── grasp(red_cube, force=5.0)
+├── move_to_target(blue_platform)
+└── place(red_cube, release_force=2.0)
+
+With dependencies: grasp → move_to_target → place
+</code></pre></div></div>
+
+<p>Each node is an <strong>executable action</strong> with parameters and preconditions.</p>
+
+<h2 id="plan-structure">Plan Structure</h2>
+
+<h3 id="nodes-executable-actions">Nodes: Executable Actions</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PlanNode</span><span class="p">:</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># Unique identifier
+</span>    <span class="n">action_type</span><span class="p">:</span> <span class="nb">str</span>          <span class="c1"># "grasp", "move", "place", etc.
+</span>    <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="c1"># Action parameters
+</span>    <span class="n">preconditions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># Required state conditions
+</span>    <span class="n">resource_cost</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>  <span class="c1"># CPU, memory, etc.
+</span></code></pre></div></div>
+
+<h3 id="edges-dependencies">Edges: Dependencies</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PlanEdge</span><span class="p">:</span>
+    <span class="n">from_node</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">to_node</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edge_type</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># "seq", "par", "cond"
+</span>    <span class="n">condition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>  <span class="c1"># For conditional edges
+</span></code></pre></div></div>
+
+<h2 id="plan-validation">Plan Validation</h2>
+
+<p>Before execution, plans are validated against domain schemas:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">validate_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ValidationResult</span><span class="p">:</span>
+    <span class="c1"># Check node types against schema
+</span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">nodes</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">schema</span><span class="p">.</span><span class="n">allowed_types</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Unknown action: </span><span class="si">{</span><span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Check edge relationships
+</span>    <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">edges</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">.</span><span class="nf">allows_edge</span><span class="p">(</span><span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">from</span><span class="sh">'</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">to</span><span class="sh">'</span><span class="p">],</span> <span class="n">edge</span><span class="p">[</span><span class="sh">'</span><span class="s">type</span><span class="sh">'</span><span class="p">]):</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Invalid edge: </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="c1"># Check preconditions
+</span>    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">plan_dag</span><span class="p">[</span><span class="sh">'</span><span class="s">nodes</span><span class="sh">'</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nf">check_preconditions</span><span class="p">(</span><span class="n">node</span><span class="p">[</span><span class="sh">'</span><span class="s">preconditions</span><span class="sh">'</span><span class="p">],</span> <span class="n">current_state</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Precondition failed: </span><span class="si">{</span><span class="n">node</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ValidationSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="execution-engine">Execution Engine</h2>
+
+<h3 id="sequential-execution">Sequential Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_sequential</span><span class="p">(</span><span class="n">nodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">PlanNode</span><span class="p">],</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">nodes</span><span class="p">:</span>
+        <span class="c1"># Execute node
+</span>        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+
+        <span class="c1"># Update state
+</span>        <span class="n">state</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">state_changes</span><span class="p">)</span>
+
+        <span class="c1"># Handle errors
+</span>        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="parallel-execution">Parallel Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_parallel</span><span class="p">(</span><span class="n">node_groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">PlanNode</span><span class="p">]],</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="c1"># Execute independent groups in parallel
+</span>    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">node_groups</span><span class="p">:</span>
+        <span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span><span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">group</span><span class="p">]</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+
+        <span class="c1"># Check for failures
+</span>        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="nf">zip</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="nb">id</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionSuccess</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="conditional-execution">Conditional Execution</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_conditional</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">,</span> <span class="n">condition</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ExecutionResult</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="nf">evaluate_condition</span><span class="p">(</span><span class="n">condition</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">None</span>
+</code></pre></div></div>
+
+<h2 id="error-handling-and-recovery">Error Handling and Recovery</h2>
+
+<h3 id="retry-logic">Retry Logic</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_with_retry</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">,</span> <span class="n">max_retries</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="n">max_retries</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+        <span class="c1"># Exponential backoff
+</span>        <span class="k">await</span> <span class="n">asyncio</span><span class="p">.</span><span class="nf">sleep</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">attempt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="nc">ExecutionFailure</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Failed after </span><span class="si">{</span><span class="n">max_retries</span><span class="si">}</span><span class="s"> attempts</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="fallback-strategies">Fallback Strategies</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">async</span> <span class="k">def</span> <span class="nf">execute_with_fallback</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">PlanNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+    <span class="c1"># Try primary execution
+</span>    <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+        <span class="c1"># Try alternative approach
+</span>        <span class="n">fallback_node</span> <span class="o">=</span> <span class="nf">create_fallback_node</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="nf">execute_node</span><span class="p">(</span><span class="n">fallback_node</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span>
+</code></pre></div></div>
+
+<h2 id="real-world-integration">Real-World Integration</h2>
+
+<h3 id="tool-adapters">Tool Adapters</h3>
+<p>Each plan node maps to a <strong>tool adapter</strong> that knows how to execute the action:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ToolAdapter</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">parameters</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExecutionResult</span><span class="p">:</span>
+        <span class="c1"># Implementation specific to tool
+</span>        <span class="k">pass</span>
+
+<span class="c1"># Example adapters
+</span><span class="n">grasp_adapter</span> <span class="o">=</span> <span class="nc">GraspAdapter</span><span class="p">(</span><span class="n">robot_interface</span><span class="p">)</span>
+<span class="n">move_adapter</span> <span class="o">=</span> <span class="nc">MoveAdapter</span><span class="p">(</span><span class="n">robot_interface</span><span class="p">)</span>
+<span class="n">api_adapter</span> <span class="o">=</span> <span class="nc">APIAdapter</span><span class="p">(</span><span class="n">http_client</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="state-management">State Management</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ExecutionState</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">):</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">robot_state</span> <span class="o">=</span> <span class="p">{}</span>      <span class="c1"># Joint positions, gripper state
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">environment</span> <span class="o">=</span> <span class="p">{}</span>      <span class="c1"># Object positions, obstacles
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">api_tokens</span> <span class="o">=</span> <span class="p">{}</span>       <span class="c1"># Authentication tokens
+</span>        <span class="n">self</span><span class="p">.</span><span class="n">resource_usage</span> <span class="o">=</span> <span class="p">{}</span>   <span class="c1"># CPU, memory, network usage
+</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">changes</span><span class="p">:</span> <span class="n">Dict</span><span class="p">):</span>
+        <span class="c1"># Deep merge state updates
+</span>        <span class="n">self</span><span class="p">.</span><span class="nf">_merge_recursive</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">robot_state</span><span class="p">,</span> <span class="n">changes</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">robot</span><span class="sh">'</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="n">self</span><span class="p">.</span><span class="nf">_merge_recursive</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">environment</span><span class="p">,</span> <span class="n">changes</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="sh">'</span><span class="s">environment</span><span class="sh">'</span><span class="p">,</span> <span class="p">{}))</span>
+</code></pre></div></div>
+
+<h2 id="monitoring-and-observability">Monitoring and Observability</h2>
+
+<h3 id="execution-metrics">Execution Metrics</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ExecutionMetrics</span><span class="p">:</span>
+    <span class="n">total_time</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">nodes_executed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">nodes_failed</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">resource_usage</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">error_patterns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+</code></pre></div></div>
+
+<h3 id="real-time-monitoring">Real-time Monitoring</h3>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ExecutionMonitor</span><span class="p">:</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">monitor_execution</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">while</span> <span class="nf">execution_is_running</span><span class="p">(</span><span class="n">execution_id</span><span class="p">):</span>
+            <span class="n">metrics</span> <span class="o">=</span> <span class="nf">collect_execution_metrics</span><span class="p">(</span><span class="n">execution_id</span><span class="p">)</span>
+            <span class="nf">send_metrics_to_dashboard</span><span class="p">(</span><span class="n">metrics</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">metrics</span><span class="p">.</span><span class="n">error_rate</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">:</span>
+                <span class="nf">trigger_error_handling</span><span class="p">(</span><span class="n">execution_id</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="code-example-robot-manipulation">Code Example: Robot Manipulation</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Generate plan for robot task
+</span><span class="n">plan_text</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">generate</span><span class="p">(</span><span class="sh">"</span><span class="s">Pick up red cube and place on blue platform</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">plan_dag</span> <span class="o">=</span> <span class="nf">parse_plan_from_text</span><span class="p">(</span><span class="n">plan_text</span><span class="p">)</span>
+
+<span class="c1"># Validate plan
+</span><span class="n">validation</span> <span class="o">=</span> <span class="n">plan_checker</span><span class="p">.</span><span class="nf">validate_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">validation</span><span class="p">.</span><span class="n">valid</span><span class="p">:</span>
+    <span class="c1"># Repair or reject invalid plan
+</span>    <span class="n">repaired_plan</span> <span class="o">=</span> <span class="nf">repair_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">,</span> <span class="n">validation</span><span class="p">.</span><span class="n">errors</span><span class="p">)</span>
+    <span class="n">plan_dag</span> <span class="o">=</span> <span class="n">repaired_plan</span>
+
+<span class="c1"># Execute plan
+</span><span class="n">executor</span> <span class="o">=</span> <span class="nc">PlanExecutor</span><span class="p">(</span><span class="n">tool_adapters</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">executor</span><span class="p">.</span><span class="nf">execute_plan</span><span class="p">(</span><span class="n">plan_dag</span><span class="p">,</span> <span class="n">current_state</span><span class="p">)</span>
+
+<span class="c1"># Handle result
+</span><span class="k">if</span> <span class="n">result</span><span class="p">.</span><span class="n">success</span><span class="p">:</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Task completed in </span><span class="si">{</span><span class="n">result</span><span class="p">.</span><span class="n">execution_time</span><span class="si">}</span><span class="s">s</span><span class="sh">"</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">"</span><span class="s">Task failed: </span><span class="si">{</span><span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="si">}</span><span class="sh">"</span><span class="p">)</span>
+    <span class="c1"># Trigger human intervention or retry
+</span></code></pre></div></div>
+
+<h2 id="benefits-of-plan-execution">Benefits of Plan Execution</h2>
+
+<ol>
+  <li><strong>Reliability</strong>: Plans are validated before execution</li>
+  <li><strong>Safety</strong>: Precondition checking prevents dangerous actions</li>
+  <li><strong>Efficiency</strong>: Parallel execution of independent actions</li>
+  <li><strong>Debugging</strong>: Clear execution logs and error reporting</li>
+  <li><strong>Recovery</strong>: Automatic retry and fallback mechanisms</li>
+</ol>
+
+<h2 id="challenges-and-solutions">Challenges and Solutions</h2>
+
+<p><strong>Challenge</strong>: Plans can become very complex
+<strong>Solution</strong>: Hierarchical planning with abstraction levels</p>
+
+<p><strong>Challenge</strong>: Real-world state is uncertain
+<strong>Solution</strong>: Robust precondition checking with sensor feedback</p>
+
+<p><strong>Challenge</strong>: Execution failures require recovery
+<strong>Solution</strong>: Comprehensive error handling with multiple fallback strategies</p>
+
+<h2 id="next-steps">Next Steps</h2>
+
+<p>In the next post, we’ll explore <a href="/ai/ml/safety/ethics/2024/10/05/safety-invariants/">safety invariants</a> - how BuilderBrain prevents harmful behavior during execution.</p>
+
+<hr />
+
+<p><em>Plan execution transforms BuilderBrain from a text generator into an action-taking system. It’s the bridge between abstract reasoning and real-world impact.</em></p>
+
+  </div><a class="u-url" href="/builderbrain/posts/ai/ml/robotics/planning/2024/10/04/plan-execution.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/builderbrain/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">BuilderBrain - Dual-Rail Compositional AI</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">BuilderBrain - Dual-Rail Compositional AI</li><li><a class="u-email" href="mailto:your-email@example.com">your-email@example.com</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/your-github-username"><svg class="svg-icon"><use xlink:href="/builderbrain/assets/minima-social-icons.svg#github"></use></svg> <span class="username">your-github-username</span></a></li><li><a href="https://www.twitter.com/your-twitter-handle"><svg class="svg-icon"><use xlink:href="/builderbrain/assets/minima-social-icons.svg#twitter"></use></svg> <span class="username">your-twitter-handle</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p>A revolutionary approach to AI that extends pretrained transformers with compositional reasoning, formal grammars, and safety constraints. BuilderBrain builds, doesn&#39;t just search.</p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
