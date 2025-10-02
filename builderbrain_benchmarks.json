@@ -1,0 +1,117 @@
+{
+  "core_imports": {
+    "success": true,
+    "import_time": 1.1920928955078125e-06,
+    "modules_loaded": 6
+  },
+  "math_utilities": {
+    "success": true,
+    "computation_time": 0.008531808853149414,
+    "normalization_range": [
+      -1.0,
+      1.0
+    ],
+    "dual_value": 0.0
+  },
+  "dual_optimization": {
+    "success": true,
+    "computation_time": 0.004480838775634766,
+    "total_loss": 1.0,
+    "num_constraints": 3,
+    "dual_values": {
+      "grammar": 0.0,
+      "graph2graph": 0.0,
+      "buildability": 0.0
+    }
+  },
+  "grammar_parsing": {
+    "success": true,
+    "computation_time": 1.1607129573822021,
+    "terminals_count": 11,
+    "valid_sequences_tested": 3,
+    "invalid_sequences_tested": 3
+  },
+  "plan_validation": {
+    "success": true,
+    "computation_time": 0.0037560462951660156,
+    "robot_nodes": 4,
+    "robot_edges": 3,
+    "api_nodes": 3,
+    "api_edges": 2
+  },
+  "world_model": {
+    "success": true,
+    "computation_time": 0.015950918197631836,
+    "rollout_shapes": {
+      "states": [
+        2,
+        6,
+        32
+      ],
+      "observations": [
+        2,
+        5,
+        10
+      ],
+      "rewards": [
+        2,
+        5,
+        1
+      ],
+      "safeties": [
+        2,
+        5,
+        1
+      ]
+    },
+    "state_dim": 32,
+    "predictions_available": [
+      "observation",
+      "reward",
+      "safety"
+    ]
+  },
+  "safety_monitoring": {
+    "success": true,
+    "computation_time": 0.008428812026977539,
+    "risk_energy": 0.5244125723838806,
+    "promotion_approved": false,
+    "violation_rate": 0.0
+  },
+  "training_pipeline": {
+    "success": true,
+    "computation_time": 0.34614014625549316,
+    "config_hidden_size": 768,
+    "batch_shape": [
+      2,
+      8
+    ],
+    "vocab_size": 50257
+  },
+  "inference_server": {
+    "success": true,
+    "computation_time": 0.1514897346496582,
+    "server_framework": "FastAPI",
+    "api_version": "1.0"
+  },
+  "model_export": {
+    "success": true,
+    "computation_time": 0.39356493949890137,
+    "export_id": "builderbrain_tiny_1759360313",
+    "export_path": "exports/builderbrain_tiny_1759360313",
+    "file_size": "1.4MB"
+  },
+  "performance": {
+    "success": true,
+    "computation_time": 0.01760101318359375,
+    "memory_usage_mb": 360.421875,
+    "total_modules": 20,
+    "test_coverage": "14 passing tests"
+  },
+  "summary": {
+    "total_time": 2.123110294342041,
+    "success_count": 11,
+    "total_count": 11,
+    "success_rate": 1.0
+  }
+}
