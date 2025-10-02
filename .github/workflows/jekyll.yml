@@ -30,6 +30,9 @@ jobs:
           sudo apt-get install -y ruby-full build-essential zlib1g-dev
           sudo gem install jekyll bundler
 
+      - name: Install bundle dependencies
+        run: bundle install
+
       - name: Build with Jekyll
         run: |
           bundle exec jekyll build
