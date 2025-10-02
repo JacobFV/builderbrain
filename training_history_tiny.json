@@ -1,0 +1,36 @@
+{
+  "total_loss": [
+    36.77472214508057,
+    34.48924779510498,
+    32.78897398376465,
+    31.321390968322753,
+    29.970357521057128
+  ],
+  "task_loss": [],
+  "constraint_losses": {
+    "grammar": [],
+    "graph2graph": []
+  },
+  "dual_variables": [
+    {
+      "grammar": 0.0,
+      "graph2graph": 1.2805033762471631
+    },
+    {
+      "grammar": 0.0,
+      "graph2graph": 2.5339641171499507
+    },
+    {
+      "grammar": 0.0,
+      "graph2graph": 3.785989776949751
+    },
+    {
+      "grammar": 0.0,
+      "graph2graph": 5.037427354302754
+    },
+    {
+      "grammar": 0.0,
+      "graph2graph": 6.288542572209325
+    }
+  ]
+}
